@@ -1,9 +1,7 @@
 [CmdletBinding()]
 param (
-	[Parameter()]
-	[string]
-	$Family
-)
+	[Parameter()][string]$Family,
+	[Parameter()][string]$Config)
 
 function Format-Name {
 	param (
@@ -32,7 +30,7 @@ function Get-Font-Family {
 	$fontZipPath = "$($env:TEMP)\$Family_$(New-Guid)"
 	$fontZipFileName = "$fontZipPath.zip"
 
-	Invoke-WebRequest https://raw.githubusercontent.com/BusHero/Install-Font/main/fonts.json -OutFile $fontsPath 
+	Invoke-WebRequest $Config -OutFile $fontsPath 
 	$fonts = Get-Content $fontsPath | ConvertFrom-Json -AsHashtable
 	Invoke-WebRequest $fonts[$Family] -OutFile $fontZipFileName
 	Expand-Archive -LiteralPath $fontZipFileName -DestinationPath $fontZipPath

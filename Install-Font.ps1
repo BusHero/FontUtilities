@@ -3,6 +3,13 @@ param (
 	[Parameter()][string]$Family,
 	[Parameter()][string]$Config)
 
+function Write-Error($message) {
+	[Console]::ForegroundColor = 'red'
+	[Console]::Error.WriteLine($message)
+	[Console]::ResetColor()
+	exit
+}
+
 function Format-Name {
 	param (
 		[Parameter(Mandatory = $true)][System.IO.FileSystemInfo]$font
@@ -17,9 +24,25 @@ function Install-Font {
 	param (
 		[Parameter(Mandatory = $true)][System.IO.FileSystemInfo]$font
 	)
+	Write-Host "Copying fonts to C:\Windows\Fonts ..."
 	Copy-Item -Path $font.FullName -Destination "C:\Windows\Fonts"
 	$formatedFontName = Format-Name $font
+
+	Write-Host "Set up register keys ..."
 	New-ItemProperty -Name $formatedFontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -PropertyType string -Value $font.Name -Force -ErrorAction SilentlyContinue | Out-Null
+}
+
+function Get-File {
+	param (
+		[string]$Source,
+		[string]$Destination
+	)
+	try {
+		Invoke-WebRequest $Source -OutFile $Destination 
+	}
+	catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+		Write-Output $PSItem.ErrorDetails.Message
+	}
 }
 
 function Get-Font-Family {
@@ -30,15 +53,24 @@ function Get-Font-Family {
 	$fontZipPath = "$($env:TEMP)\$Family_$(New-Guid)"
 	$fontZipFileName = "$fontZipPath.zip"
 
-	Invoke-WebRequest $Config -OutFile $fontsPath 
+	Write-Host "Downloading config file ..."
+	Get-File -Source $Config -Destination $fontsPath
 	$fonts = Get-Content $fontsPath | ConvertFrom-Json -AsHashtable
-	Invoke-WebRequest $fonts[$Family] -OutFile $fontZipFileName
+	
+	Write-Host "Downloading font '$fontFamily' font family..."
+	Get-File -Source $fonts[$Family] -Destination $fontZipFileName
+
+	Write-Host "Unzipping archive ..."
 	Expand-Archive -LiteralPath $fontZipFileName -DestinationPath $fontZipPath
 	$fontZipPath
 }
 
-$fontExpandPath = Get-Font-Family $Family
-$fontFiles = Get-ChildItem $fontExpandPath -Filter "*.ttf"
-foreach ($font in $fontFiles) {
-	Install-Font $font
-} 
+function Main {
+	$fontExpandPath = Get-Font-Family $Family
+	$fontFiles = Get-ChildItem $fontExpandPath -Filter "*.ttf"
+	foreach ($font in $fontFiles) {
+		Install-Font $font
+	}
+}
+
+Main

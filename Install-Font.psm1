@@ -1,7 +1,10 @@
-[CmdletBinding()]
-param (
-	[Parameter()][string]$Family,
-	[Parameter()][string]$Config)
+$Script:ConfigUrl = 'https://raw.githubusercontent.com/BusHero/Install-Font/main/fonts.json'
+$Script:ConfigPath = '.\fonts.json'
+$Script:FontsCachePath = '.\.fonts'
+
+function Update-Config {
+	Invoke-WebRequest $Script:ConfigUrl -OutFile $ConfigPath 
+}
 
 function Write-Error($message) {
 	[Console]::ForegroundColor = 'red'
@@ -45,32 +48,45 @@ function Get-File {
 	}
 }
 
-function Get-Font-Family {
+function Get-FontFamily {
 	param (
 		[Parameter(Mandatory = $true)][string]$fontFamily
 	)
-	$fontsPath = "$($env:TEMP)\fonts-$(New-Guid).json"
-	$fontZipPath = "$($env:TEMP)\$Family_$(New-Guid)"
-	$fontZipFileName = "$fontZipPath.zip"
-
-	Write-Host "Downloading config file ..."
-	Get-File -Source $Config -Destination $fontsPath
-	$fonts = Get-Content $fontsPath | ConvertFrom-Json -AsHashtable
+	$fontFamilyZip = "${Script:FontsCachePath}\$fontFamily.zip"
+	$fontFamilyPath = "${Script:FontsCachePath}\$fontFamily"
+	$fonts = Get-Content $Script:ConfigPath | ConvertFrom-Json -AsHashtable
 	
 	Write-Host "Downloading font '$fontFamily' font family..."
-	Get-File -Source $fonts[$Family] -Destination $fontZipFileName
+	Get-File -Source $fonts[$Family] -Destination $fontFamilyZip
 
 	Write-Host "Unzipping archive ..."
-	Expand-Archive -LiteralPath $fontZipFileName -DestinationPath $fontZipPath
-	$fontZipPath
+	Expand-Archive -LiteralPath $fontZipFileName -DestinationPath $fontFamilyPath
+	$fontFamilyPath
 }
 
-function Main {
-	$fontExpandPath = Get-Font-Family $Family
+function Install-FontFamily {
+	param ([Parameter()][string]$Family)
+	$fontFamilyZip = "${Script:FontsCachePath}\$Family.zip"
+	$fontFamilyPath = "${Script:FontsCachePath}\$Family"
+	$fonts = Get-Content $Script:ConfigPath | ConvertFrom-Json -AsHashtable
+	
+	Write-Host "Downloading font '$fontFamily' font family..."
+	Get-File -Source $fonts[$Family] -Destination $fontFamilyZip
+
+	Write-Host "Unzipping archive ..."
+	Expand-Archive -LiteralPath $fontFamilyZip -DestinationPath $fontFamilyPath
+	
 	$fontFiles = Get-ChildItem $fontExpandPath -Filter "*.ttf"
+	
 	foreach ($font in $fontFiles) {
 		Install-Font $font
 	}
+
+	Remove-Item $fontFamilyPath -Recurse -Force
 }
 
-Main
+Export-ModuleMember Install-FontFamily
+Export-ModuleMember Update-Config
+
+Update-Config
+mkdir $Script:FontsCachePath -Force

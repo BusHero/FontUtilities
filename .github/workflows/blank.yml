@@ -8,7 +8,5 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - run: |
-        export FOO=bar
-        echo "::set-env name=FOO::$FOO"
-    - run: echo $FOO
+    - run: $env:FOO = 'bar'
+    - run: echo $env:FOO

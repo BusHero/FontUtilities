@@ -9,4 +9,4 @@ jobs:
       id: vars
       run: $VERSION=${GITHUB_REF#refs/*/}
     - name: Print version
-      run: Write-Output "Version: '$Version'"
+      run: Write-Output $VERSION

@@ -11,7 +11,7 @@ jobs:
     - name: Get Release Version
       id: vars
       run: |
-          VERSION=${GITHUB_REF#refs/*/}
+          $VERSION=${GITHUB_REF#refs/*/}
           echo ::set-output name=tag::"${VERSION//v}"
     - name: Update Module version
       run: Update-ModuleManifest -Path .\Install-Font.psd1 -ModuleVersion $VERSION

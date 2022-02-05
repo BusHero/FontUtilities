@@ -1,5 +1,8 @@
 name: Test action
 on: workflow_dispatch
+
+env:
+  TEXT: "Hello, World!"
 jobs:
   build:
     runs-on: windows-latest
@@ -9,4 +12,4 @@ jobs:
       id: vars
       run: $VERSION=${GITHUB_REF#refs/*/}
     - name: Print version
-      run: Write-Information $VERSION
+      run: echo ${{env.TEXT}}

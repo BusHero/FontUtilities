@@ -8,12 +8,5 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Get Release Version
-      id: vars
-      run: |
-          $VERSION=${GITHUB_REF#refs/*/}
-          echo ::set-output name=tag::"${VERSION//v}"
-    - name: Update Module version
-      run: Update-ModuleManifest -Path .\Install-Font.psd1 -ModuleVersion $VERSION
     - name: Upload PowerShell module
       run: Publish-Module -Path . -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

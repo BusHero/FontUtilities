@@ -1,5 +1,9 @@
 name: Test action
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
 
 env:
   TEXT: "Hello, World!"
@@ -11,7 +15,7 @@ jobs:
     - name: Set version
       run: |
           $VERSION=${GITHUB_REF#refs/*/}
-          echo ::set-output name=tag::"${VERSION//v}"
+          echo ::set-output name=VERSION::"${VERSION//v}"
     - name: Set selected color
       run: echo '::set-output name=VERSION::0.0.3'
       id: random-color-generator

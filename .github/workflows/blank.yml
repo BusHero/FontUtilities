@@ -8,8 +8,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Get Release Version
-      id: vars
-      run: $VERSION='1.0.0'
-    - name: Print version
-      run: echo $VERSION
+    - run: |
+        export FOO=bar
+        echo "::set-env name=FOO::$FOO"
+    - run: echo $FOO

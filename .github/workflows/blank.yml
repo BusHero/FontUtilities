@@ -8,5 +8,11 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - run: $env:FOO = 'bar'
-    - run: echo $env:FOO
+    - name: Set output variables
+      id: vars
+      run: |
+        echo ::set-output name=pr_title::"[Test] Add report file $(date +%d-%m-%Y)"
+        echo ::set-output name=pr_body::"This PR was auto-generated on $(date +%d-%m-%Y) \
+          by [create-pull-request](https://github.com/peter-evans/create-pull-request)."
+    - name: Create Pull Request
+      run: echo ${{ steps.vars.outputs.pr_title }}

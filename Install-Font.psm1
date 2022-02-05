@@ -3,7 +3,7 @@ $Script:ConfigPath = '.\fonts.json'
 $Script:FontsCachePath = '.\.fonts'
 
 function Update-Config {
-	Invoke-WebRequest $Script:ConfigUrl -OutFile $ConfigPath 
+	Invoke-WebRequest $Script:ConfigUrl -OutFile $ConfigPath
 }
 
 function Write-Error($message) {
@@ -27,11 +27,11 @@ function Install-Font {
 	param (
 		[Parameter(Mandatory = $true)][System.IO.FileSystemInfo]$font
 	)
-	Write-Host "Copying fonts to C:\Windows\Fonts ..."
+	Write-Information "Copying fonts to C:\Windows\Fonts ..."
 	Copy-Item -Path $font.FullName -Destination "C:\Windows\Fonts"
 	$formatedFontName = Format-Name $font
 
-	Write-Host "Set up register keys ..."
+	Write-Information "Set up register keys ..."
 	New-ItemProperty -Name $formatedFontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -PropertyType string -Value $font.Name -Force -ErrorAction SilentlyContinue | Out-Null
 }
 
@@ -41,7 +41,7 @@ function Get-File {
 		[string]$Destination
 	)
 	try {
-		Invoke-WebRequest $Source -OutFile $Destination 
+		Invoke-WebRequest $Source -OutFile $Destination
 	}
 	catch [Microsoft.PowerShell.Commands.HttpResponseException] {
 		Write-Output $PSItem.ErrorDetails.Message
@@ -55,11 +55,11 @@ function Get-FontFamily {
 	$fontFamilyZip = "${Script:FontsCachePath}\$fontFamily.zip"
 	$fontFamilyPath = "${Script:FontsCachePath}\$fontFamily"
 	$fonts = Get-Content $Script:ConfigPath | ConvertFrom-Json -AsHashtable
-	
-	Write-Host "Downloading font '$fontFamily' font family..."
+
+	Write-Information "Downloading font '$fontFamily' font family..."
 	Get-File -Source $fonts[$Family] -Destination $fontFamilyZip
 
-	Write-Host "Unzipping archive ..."
+	Write-Information "Unzipping archive ..."
 	Expand-Archive -LiteralPath $fontZipFileName -DestinationPath $fontFamilyPath
 	$fontFamilyPath
 }
@@ -69,15 +69,15 @@ function Install-FontFamily {
 	$fontFamilyZip = "${Script:FontsCachePath}\$Family.zip"
 	$fontFamilyPath = "${Script:FontsCachePath}\$Family"
 	$fonts = Get-Content $Script:ConfigPath | ConvertFrom-Json -AsHashtable
-	
-	Write-Host "Downloading font '$fontFamily' font family..."
+
+	Write-Information "Downloading font '$fontFamily' font family..."
 	Get-File -Source $fonts[$Family] -Destination $fontFamilyZip
 
-	Write-Host "Unzipping archive ..."
+	Write-Information "Unzipping archive ..."
 	Expand-Archive -LiteralPath $fontFamilyZip -DestinationPath $fontFamilyPath
-	
+
 	$fontFiles = Get-ChildItem $fontExpandPath -Filter "*.ttf"
-	
+
 	foreach ($font in $fontFiles) {
 		Install-Font $font
 	}

@@ -1,4 +1,4 @@
-name: Publish to Powershell gallery
+name: Test action
 on: workflow_dispatch
 jobs:
   build:
@@ -9,4 +9,4 @@ jobs:
       id: vars
       run: $VERSION=${GITHUB_REF#refs/*/}
     - name: Print version
-      run: Write-Output $VERSION
+      run: Write-Information $VERSION

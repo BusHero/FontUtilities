@@ -8,6 +8,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Set version
+      run: |
+          $VERSION=${GITHUB_REF#refs/*/}
+          echo ::set-output name=tag::"${VERSION//v}"
     - name: Set selected color
       run: echo '::set-output name=VERSION::0.0.3'
       id: random-color-generator

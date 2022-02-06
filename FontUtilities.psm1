@@ -1,6 +1,21 @@
+#region Variables
+
+$Script:foo = 'foo'
 $Script:ConfigUrl = 'https://raw.githubusercontent.com/BusHero/Install-Font/main/fonts.json'
 $Script:ConfigPath = "$PSScriptRoot\fonts.json"
 $Script:FontsCachePath = "$PScriptRoot\.fonts"
+
+#endregion
+
+#region Private Functions
+
+#endregion
+
+#region Public Methods
+
+function Get-Foo {
+    $script:foo
+}
 
 function Update-Config {
 	Write-Host $Script:ConfigPath	
@@ -49,28 +64,11 @@ function Get-File {
 	}
 }
 
-function Get-FontFamily {
-	param (
-		[Parameter(Mandatory = $true)][string]$fontFamily
-	)
-	$fontFamilyZip = "${Script:FontsCachePath}\$fontFamily.zip"
-	$fontFamilyPath = "${Script:FontsCachePath}\$fontFamily"
-	$fonts = Get-Content $Script:ConfigPath | ConvertFrom-Json -AsHashtable
-
-	Write-Output "Downloading font '$fontFamily' font family..."
-	Get-File -Source $fonts[$Family] -Destination $fontFamilyZip
-
-	Write-Output "Unzipping archive ..."
-	Expand-Archive -LiteralPath $fontZipFileName -DestinationPath $fontFamilyPath
-	$fontFamilyPath
-}
-
 function Install-FontFamily {
 	param ([Parameter()][string]$Family)
 	$fontFamilyZip = "${Script:FontsCachePath}\$Family.zip"
 	$fontFamilyPath = "${Script:FontsCachePath}\$Family"
 	$fonts = Get-Content $Script:ConfigPath | ConvertFrom-Json -AsHashtable
-
 	Write-Output "Downloading font '$fontFamily' font family..."
 	Get-File -Source $fonts[$Family] -Destination $fontFamilyZip
 
@@ -85,6 +83,8 @@ function Install-FontFamily {
 
 	Remove-Item $fontFamilyPath -Recurse -Force
 }
+
+#endregion
 
 Export-ModuleMember Install-FontFamily
 Export-ModuleMember Update-Config

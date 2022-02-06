@@ -1,6 +1,6 @@
 $Script:ConfigUrl = 'https://raw.githubusercontent.com/BusHero/Install-Font/main/fonts.json'
-$Script:ConfigPath = '.\fonts.json'
-$Script:FontsCachePath = '.\.fonts'
+$Script:ConfigPath = "$PSScriptRoot\fonts.json"
+$Script:FontsCachePath = "$PScriptRoot\.fonts"
 
 function Update-Config {
 	Invoke-WebRequest $Script:ConfigUrl -OutFile $ConfigPath

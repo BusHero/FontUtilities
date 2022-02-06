@@ -9,4 +9,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Upload PowerShell module
-      run: Publish-Module -Path . -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    
+      run: Publish-Module -Path . -Exclude '.\github' -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

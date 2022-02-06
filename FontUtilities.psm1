@@ -3,7 +3,8 @@ $Script:ConfigPath = "$PSScriptRoot\fonts.json"
 $Script:FontsCachePath = "$PScriptRoot\.fonts"
 
 function Update-Config {
-	Invoke-WebRequest $Script:ConfigUrl -OutFile $ConfigPath
+	Write-Host $Script:ConfigPath	
+	Invoke-WebRequest $Script:ConfigUrl -OutFile $Script:ConfigPath
 }
 
 function Write-Error($message) {
@@ -27,11 +28,11 @@ function Install-Font {
 	param (
 		[Parameter(Mandatory = $true)][System.IO.FileSystemInfo]$font
 	)
-	Write-Information "Copying fonts to C:\Windows\Fonts ..."
+	Write-Output "Copying fonts to C:\Windows\Fonts ..."
 	Copy-Item -Path $font.FullName -Destination "C:\Windows\Fonts"
 	$formatedFontName = Format-Name $font
 
-	Write-Information "Set up register keys ..."
+	Write-Output "Set up register keys ..."
 	New-ItemProperty -Name $formatedFontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -PropertyType string -Value $font.Name -Force -ErrorAction SilentlyContinue | Out-Null
 }
 
@@ -56,10 +57,10 @@ function Get-FontFamily {
 	$fontFamilyPath = "${Script:FontsCachePath}\$fontFamily"
 	$fonts = Get-Content $Script:ConfigPath | ConvertFrom-Json -AsHashtable
 
-	Write-Information "Downloading font '$fontFamily' font family..."
+	Write-Output "Downloading font '$fontFamily' font family..."
 	Get-File -Source $fonts[$Family] -Destination $fontFamilyZip
 
-	Write-Information "Unzipping archive ..."
+	Write-Output "Unzipping archive ..."
 	Expand-Archive -LiteralPath $fontZipFileName -DestinationPath $fontFamilyPath
 	$fontFamilyPath
 }
@@ -70,10 +71,10 @@ function Install-FontFamily {
 	$fontFamilyPath = "${Script:FontsCachePath}\$Family"
 	$fonts = Get-Content $Script:ConfigPath | ConvertFrom-Json -AsHashtable
 
-	Write-Information "Downloading font '$fontFamily' font family..."
+	Write-Output "Downloading font '$fontFamily' font family..."
 	Get-File -Source $fonts[$Family] -Destination $fontFamilyZip
 
-	Write-Information "Unzipping archive ..."
+	Write-Output "Unzipping archive ..."
 	Expand-Archive -LiteralPath $fontFamilyZip -DestinationPath $fontFamilyPath
 
 	$fontFiles = Get-ChildItem $fontExpandPath -Filter "*.ttf"

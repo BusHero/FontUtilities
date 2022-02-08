@@ -20,7 +20,7 @@ BeforeAll {
 #     }
 # }
 
-Describe "Install Font" {
+Describe "Install font file" {
     BeforeAll {
         $FontFileName = 'font.ttf'
         $FontFile = "TestDrive:\$FontFileName"
@@ -34,9 +34,12 @@ Describe "Install Font" {
         New-Item -Path $Location -ItemType Directory
         New-Item -Path 'TestRegistry:\' -Name $RegistryName
     }
+
     Context "Font is installed" {
         BeforeAll {
-            Install-FontFile -FontFile $FontFile -Location $Location -Registry $Registry
+            Install-FontFile -FontFile $FontFile `
+                             -Location $Location `
+                             -Registry $Registry
         }
         It "<FontFileName> is copied to the <location>" {
             Test-Path "$Location\$FontFileName" | 
@@ -48,6 +51,31 @@ Describe "Install Font" {
                 should -be $FontFileName -because 'Registry entry should be created'
         }
     }
+
+    It "Throw if font file does not exist" {
+        { Install-FontFile -FontFile 'NonExistingFile' `
+                            -Location $Location `
+                            -Registry $Registry } | should -throw
+    }
+    
+    Context "Creates location if it doesn't exist" {
+        BeforeAll {
+            $NonExistentLocation = 'TestDrive:\.fonts'
+        }
+        It "Directory Exists" {
+            Install-FontFile -FontFile $FontFile `
+                             -Location $NonExistentLocation `
+                             -Registry $Registry
+            Test-Path -Path $NonExistentLocation | should -be $true
+            Test-Path -Path $NonExistentLocation\$FontFileName | should -be $true
+        }
+        AfterAll {
+            if (Test-Path -Path $NonExistentLocation) {
+                Remove-Item -Path $NonExistentLocation -Recurse -Force
+            }
+        }
+    }
+
     AfterAll {
         Remove-Item -Path $FontFile -Recurse -Force
         Remove-Item -Path $Location -Recurse -Force

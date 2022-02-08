@@ -25,7 +25,16 @@ function Install-FontFile {
 		[string]$FontFile,
 		[string]$Location,
 		[string]$Registry)
-	Copy-Item -Path $FontFile -Destination $Location
+	if (-not (Test-Path $FontFile)) 
+	{
+		throw [System.IO.FileNotFoundException] "$FontFile not found"
+	}
+
+	if (-not (Test-Path $Location))
+	{
+		New-Item -Path $Location -ItemType Directory
+	}
+	Copy-Item -Path $FontFile -Destination $Location 
 	
 	$font = Get-Item $FontFile
 	$formattedName = Format-Name $font

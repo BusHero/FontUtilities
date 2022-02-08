@@ -22,9 +22,9 @@ function Format-Name {
 
 function Install-FontFile {
 	param(
-		[string]$FontFile,
-		[string]$Location,
-		[string]$Registry)
+		[Parameter(Mandatory = $true)][string]$FontFile,
+		[Parameter(Mandatory = $true)][string]$Location,
+		[Parameter(Mandatory = $true)][string]$Registry)
 	if (-not (Test-Path $FontFile)) 
 	{
 		throw [System.IO.FileNotFoundException] "$FontFile not found"

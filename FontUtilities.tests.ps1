@@ -62,7 +62,7 @@ Describe "Install font file" {
         BeforeAll {
             $NonExistentLocation = 'TestDrive:\.fonts'
         }
-        It "Directory Exists" {
+        It "<NonExistentLocation> is created automatically" {
             Install-FontFile -FontFile $FontFile `
                              -Location $NonExistentLocation `
                              -Registry $Registry
@@ -72,6 +72,28 @@ Describe "Install font file" {
         AfterAll {
             if (Test-Path -Path $NonExistentLocation) {
                 Remove-Item -Path $NonExistentLocation -Recurse -Force
+            }
+        }
+    }
+
+    Context "Creates Registry key if it doesn't exist" {
+        BeforeAll {
+            $NonExistingRegistryName = 'Fonts New'
+            $NonExistingRegistry = "TestRegistry:\$NonExistingRegistryName"
+        }
+        It "<NonExistingRegistry> is created automatically" {
+            Install-FontFile -FontFile $FontFile `
+                             -Location $Location `
+                             -Registry $NonExistingRegistry
+            
+            Test-Path $NonExistingRegistry | should -beTrue -because 'Install-FontFamily should create non existing register key'
+            Get-ItemProperty -path $NonExistingRegistry |
+                Select-object -ExpandProperty $RegistryEntry |
+                should -be $FontFileName -because 'Registry entry should be created if missing'
+        }
+        AfterAll {
+            If (Test-Path $NonExistingRegistry) {
+                Remove-Item -path $NonExistingRegistry -Recurse
             }
         }
     }

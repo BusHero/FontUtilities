@@ -38,12 +38,17 @@ function Install-FontFile {
 	
 	$font = Get-Item $FontFile
 	$formattedName = Format-Name $font
+
+	if (-not (Test-Path $Registry))
+	{
+		New-Item -Path $Registry
+	}
 	New-ItemProperty -Name $formattedName `
-					 -Path $Registry `
-					 -PropertyType string `
-					 -Value $font.Name `
-					 -Force `
-					 -ErrorAction SilentlyContinue | Out-Null
+		-Path $Registry `
+		-PropertyType string `
+		-Value $font.Name `
+		-Force `
+		-ErrorAction SilentlyContinue | Out-Null
 }
 
 Export-ModuleMember -Function Add-Font, Get-Font, Install-FontFile

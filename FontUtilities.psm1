@@ -20,39 +20,63 @@ function Format-Name {
 	}
 }
 
-function Install-FontFile {
-	param(
-		[Parameter(Mandatory = $true)][string]$FontFile,
-		[Parameter(Mandatory = $true)][string]$Location,
-		[Parameter(Mandatory = $true)][string]$Registry)
+
+#region Install-FontFile (Implementation Details)
+
+function assertFileExists($file) {
 	if (-not (Test-Path $FontFile)) 
 	{
 		throw [System.IO.FileNotFoundException] "$FontFile not found"
 	}
-	$extension = Get-Item $FontFile | Select-Object -ExpandProperty Extension
+}
+
+function assertFileIsFontFile($file){
+	$extension = Get-Item $file | Select-Object -ExpandProperty Extension
 	if ($extension -ne '.ttf')
 	{
-		throw [System.Exception] "$FontFile is not a font file"
+		throw [System.Exception] "$file is not a font file"
 	}
+}
+
+function copyFontDestination($FontFile, $location) {
 	if (-not (Test-Path $Location))
 	{
 		New-Item -Path $Location -ItemType Directory
 	}
 	Copy-Item -Path $FontFile -Destination $Location 
-	
-	$font = Get-Item $FontFile
-	$formattedName = Format-Name $font
+}
 
+function ensureRegistry($Registry) {
 	if (-not (Test-Path $Registry))
 	{
 		New-Item -Path $Registry
 	}
+}
+
+function addFontToRegistry($FontFile, $Registry) {
+	ensureRegistry $Registry
+
+	$font = Get-Item $FontFile 
+	$formattedName = Format-Name $font
 	New-ItemProperty -Name $formattedName `
 		-Path $Registry `
 		-PropertyType string `
 		-Value $font.Name `
 		-Force `
 		-ErrorAction SilentlyContinue | Out-Null
+}
+
+#endregion
+
+function Install-FontFile {
+	param(
+		[Parameter(Mandatory = $true)][string]$FontFile,
+		[Parameter(Mandatory = $true)][string]$Location,
+		[Parameter(Mandatory = $true)][string]$Registry)
+	assertFileExists $FontFile
+	assertFileIsFontFile $FontFile
+	copyFontDestination $FontFile $Location
+	addFontToRegistry $FontFile $Registry
 }
 
 Export-ModuleMember -Function Add-Font, Get-Font, Install-FontFile

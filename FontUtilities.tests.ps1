@@ -78,29 +78,6 @@ Describe "Install font file" {
         }
     }
 
-    # Context "Throws if file is not a font file" 
-    # # -TestCases @(
-    # #     @{File="TestDrive:\file.json"; ItemType='File'}
-    # #     @{File="TestDrive:\file.txt"; ItemType='File'}
-    # #     @{File="TestDrive:\file.xml"; ItemType='File'}
-    # #     @{File="TestDrive:\directory"; ItemType='Directory'}
-    # # ) 
-    # {
-    #     # BeforeAll {
-    #     #     New-Item -Path $file -ItemType $ItemType
-    #     # }
-    #     #     It "Should throw when non font extension is used" {
-    #     #         Install-FontFile -FontFile $file `
-    #     #                          -Location $Location `
-    #     #                          -Registry $Registry
-    #     #     }
-    #     # AfterAll {
-    #     #     Remove-Item -Path $file -Recurse -Force
-    #     # }
-    # }
-    # {
-    # }
-
     Context "Creates location if it doesn't exist" {
         BeforeAll {
             $NonExistentLocation = 'TestDrive:\.fonts'

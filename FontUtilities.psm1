@@ -29,7 +29,11 @@ function Install-FontFile {
 	{
 		throw [System.IO.FileNotFoundException] "$FontFile not found"
 	}
-
+	$extension = Get-Item $FontFile | Select-Object -ExpandProperty Extension
+	if ($extension -ne '.ttf')
+	{
+		throw [System.Exception] "$FontFile is not a font file"
+	}
 	if (-not (Test-Path $Location))
 	{
 		New-Item -Path $Location -ItemType Directory

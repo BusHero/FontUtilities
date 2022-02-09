@@ -25,7 +25,8 @@ Describe "Install font file" {
         $FontFileName = 'font.ttf'
         $FontFile = "TestDrive:\$FontFileName"
         $Location = 'TestDrive:\fonts'
-        
+        $url = 'https://raw.githubusercontent.com/BusHero/test-repo/main/TestFont.zip'
+
         $RegistryEntry = 'font (TrueType)'
         $RegistryName = 'Fonts'
         $Registry = "TestRegistry:\$RegistryName"
@@ -58,6 +59,48 @@ Describe "Install font file" {
                             -Registry $Registry } | should -throw
     }
     
+    Context "Throws if file is not a font file" -Foreach @(
+        @{File="TestDrive:\file.json"; ItemType='File'}
+        @{File="TestDrive:\file.txt"; ItemType='File'}
+        @{File="TestDrive:\file.xml"; ItemType='File'}
+        @{File="TestDrive:\directory"; ItemType='Directory'}
+    ) {
+        BeforeAll{
+            New-Item -Path $File -ItemType $ItemType
+        }
+        It "'<file>' is not a font file"{
+            { Install-FontFile -FontFile $File `
+                               -Location $Location `
+                               -Registry $Registry } | should -throw "$File is not a font file"
+        }
+        AfterAll {
+            Remove-Item -Path $File -Recurse -Force
+        }
+    }
+
+    # Context "Throws if file is not a font file" 
+    # # -TestCases @(
+    # #     @{File="TestDrive:\file.json"; ItemType='File'}
+    # #     @{File="TestDrive:\file.txt"; ItemType='File'}
+    # #     @{File="TestDrive:\file.xml"; ItemType='File'}
+    # #     @{File="TestDrive:\directory"; ItemType='Directory'}
+    # # ) 
+    # {
+    #     # BeforeAll {
+    #     #     New-Item -Path $file -ItemType $ItemType
+    #     # }
+    #     #     It "Should throw when non font extension is used" {
+    #     #         Install-FontFile -FontFile $file `
+    #     #                          -Location $Location `
+    #     #                          -Registry $Registry
+    #     #     }
+    #     # AfterAll {
+    #     #     Remove-Item -Path $file -Recurse -Force
+    #     # }
+    # }
+    # {
+    # }
+
     Context "Creates location if it doesn't exist" {
         BeforeAll {
             $NonExistentLocation = 'TestDrive:\.fonts'

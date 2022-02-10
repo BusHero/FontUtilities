@@ -31,7 +31,7 @@ function assertFileExists($file) {
 }
 
 function assertFileIsFontFile($file){
-	$extension = Get-Item $file | Select-Object -ExpandProperty Extension
+	$extension = [System.IO.Path]::GetExtension($file)
 	if ($extension -ne '.ttf')
 	{
 		throw [System.Exception] "$file is not a font file"

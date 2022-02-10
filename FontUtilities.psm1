@@ -70,13 +70,24 @@ function addFontToRegistry($FontFile, $Registry) {
 
 function Install-FontFile {
 	param(
-		[Parameter(Mandatory = $true)][string]$FontFile,
+		[Parameter(Mandatory = $true)][string[]]$FontFile,
 		[Parameter(Mandatory = $true)][string]$Location,
 		[Parameter(Mandatory = $true)][string]$Registry)
-	assertFileExists $FontFile
-	assertFileIsFontFile $FontFile
-	copyFontDestination $FontFile $Location
-	addFontToRegistry $FontFile $Registry
+	foreach ($file in $FontFile)
+	{
+		assertFileExists $file
+		assertFileIsFontFile $file
+		copyFontDestination $file $Location
+		addFontToRegistry $file $Registry
+	}
+}
+
+function Donwload-FontFamily {
+	param (
+		[Parameter(Mandatory = $true)][string]$url,
+		[Parameter(Mandatory = $true)][string]$Location,
+		[Parameter(Mandatory = $true)][string]$Registry)
+	
 }
 
 Export-ModuleMember -Function Add-Font, Get-Font, Install-FontFile

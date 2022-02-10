@@ -3,6 +3,17 @@
 
 BeforeAll { 
     Import-Module .\FontUtilities.psm1
+
+    function Select-Zip {
+        [CmdletBinding()]
+        Param(
+            $First,
+            $Second,
+            $ResultSelector = { ,$args }
+        )
+    
+        [System.Linq.Enumerable]::Zip($First, $Second, [Func[Object, Object, Object[]]]$ResultSelector)
+    }
 }
 
 # Describe "Add-Font" {
@@ -125,6 +136,75 @@ Describe "Install font file" {
             }
         }
     }
+
+    Context "Installs several fonts at once" {
+        BeforeAll {
+            $FontNames = 'font1', 'font2'
+            $FontFileNames = $fontNames | ForEach-Object { "$_.ttf" }
+            $FontPaths = $fontFileNames | ForEach-Object { "TestDrive:\$_" }
+            $RegistryEntries = $fontNames | ForEach-Object { "$_ (TrueType)" }
+            $Registry = "TestRegistry:\foobar"
+            foreach ($font in $FontPaths) {
+                New-Item -Path $font -ItemType File
+            }
+            New-Item -Path $Registry
+
+            Install-FontFile -FontFile $FontPaths `
+                             -Location $Location `
+                             -Registry $Registry
+        }
+
+        It "'<FontPaths>' were installed" {
+            foreach ($font in $fonts) {
+                Test-Path -Path $Location\$font | should -beTrue -because "$font should be installed in the $location"
+            }
+        }
+
+        It "'<FontPaths> were added to registry" {
+            $RegistryItem = Get-ItemProperty $Registry
+            for ($counter = 0; $counter -lt $RegistryEntries.Length; $counter++)
+            { 
+                $RegistryItem |
+                    Select-Object -ExpandProperty $RegistryEntries[$counter] |
+                    should -be $FontFileNames[$counter] -because 'Registry entry should be created'
+            }
+        }
+
+        AfterAll {
+            foreach ($font in $fonts) {
+                Remove-Item -Path $font -Force -ErrorAction Ignore
+                Remove-Item -Path $Location\$font -Force -ErrorAction Ignore
+            }
+            foreach ($RegisterEntry in $RegisterEntry) {
+                Remove-ItemProperty -Path $Registry -Name $RegisterEntry -Force -ErrorAction Ignore
+            }
+        }
+    }
+
+    # Context "Downloads font from the provided url" {
+    #     BeforeAll {
+    #         $FontFileName = 'TestFont.ttf'
+    #         $Location = 'TestDrive:\fonts'
+    
+    #         $RegistryEntry = 'TestFont (TrueType)'
+    #         Donwload-FontFamily -URL 'https://raw.githubusercontent.com/BusHero/test-repo/main/TestFont.zip' `
+    #                             -Location $Location `
+    #                             -Registry $Registry
+    #     }
+    #     It "TestFont was copied" {
+    #         Test-Path -Path $Location\$FontFileName |
+    #             should -BeTrue -Because "Font should be installed"
+    #     }
+    #     It "TestFont was added to Registry key" {
+    #         Get-ItemProperty -path $Registry |
+    #             Select-object -ExpandProperty $RegistryEntry |
+    #             should -be $FontFileName -because 'Registry entry should be created'
+    #     }
+    #     AfterAll {
+    #         Remove-Item -Name $FontFileName -Path $Location -Force -ErrorAction Ignore
+    #         Remove-ItemProperty -Path $Registry -Name $RegistryEntry -Force -ErrorAction Ignore
+    #     }
+    # }
 }
 
 AfterAll {

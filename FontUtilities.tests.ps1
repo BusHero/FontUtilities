@@ -142,16 +142,17 @@ Describe "Install font file" {
             $FontNames = 'font1', 'font2'
             $FontFileNames = $fontNames | ForEach-Object { "$_.ttf" }
             $FontPaths = $fontFileNames | ForEach-Object { "TestDrive:\$_" }
-            $RegistryEntries = $fontNames | ForEach-Object { "$_ (TrueType)" }
-            $Registry = "TestRegistry:\foobar"
-            foreach ($font in $FontPaths) {
-                New-Item -Path $font -ItemType File
-            }
-            New-Item -Path $Registry
+            $FontRegistryProperties = $fontNames | ForEach-Object { "$_ (TrueType)" }
+            $FontsInstallationDirectory = 'TestDrive:\foobar'
+            $FontsInstallationRegistry = "TestRegistry:\foobar"
+
+            $FontPaths | ForEach-Object { New-Item -Path $_ -ItemType File }
+            New-Item -Path $FontsInstallationDirectory -ItemType Directory
+            New-Item -Path $FontsInstallationRegistry
 
             Install-FontFile -FontFile $FontPaths `
-                             -Location $Location `
-                             -Registry $Registry
+                             -Location $FontsInstallationDirectory `
+                             -Registry $FontsInstallationRegistry
         }
 
         It "'<FontPaths>' were installed" {
@@ -161,26 +162,33 @@ Describe "Install font file" {
         }
 
         It "'<FontPaths> were added to registry" {
-            $RegistryItem = Get-ItemProperty $Registry
-            for ($counter = 0; $counter -lt $RegistryEntries.Length; $counter++)
+            $RegistryItem = Get-ItemProperty $FontsInstallationRegistry
+            foreach ($counter in 0..($FontRegistryProperties.Length - 1))
             { 
                 $RegistryItem |
-                    Select-Object -ExpandProperty $RegistryEntries[$counter] |
+                    Select-Object -ExpandProperty $FontRegistryProperties[$counter] |
                     should -be $FontFileNames[$counter] -because 'Registry entry should be created'
             }
         }
 
         AfterAll {
-            foreach ($font in $fonts) {
-                Remove-Item -Path $font -Force -ErrorAction Ignore
-                Remove-Item -Path $Location\$font -Force -ErrorAction Ignore
-            }
-            foreach ($RegisterEntry in $RegisterEntry) {
-                Remove-ItemProperty -Path $Registry -Name $RegisterEntry -Force -ErrorAction Ignore
-            }
+            $fonts | Remove-Item -Force -ErrorAction Ignore
+            $font | Remove-Item -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsInstallationDirectory -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsInstallationRegistry -Recurse -Force -ErrorAction Ignore
         }
     }
 
+    Context "Install several fonts at once. One file is a txt file" {
+        BeforeAll {
+            $fontFileName = 'font'
+            $fontFile = "$fontFileName.ttf"
+            $registryEntry = "$fontFileName (TrueType)"
+
+
+
+        }
+    }
     # Context "Downloads font from the provided url" {
     #     BeforeAll {
     #         $FontFileName = 'TestFont.ttf'

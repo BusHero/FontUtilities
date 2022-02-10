@@ -48,9 +48,11 @@ Describe "Install font file" {
     }
 
     It "Throw if font file does not exist" {
-        { Install-FontFile -FontFile 'NonExistingFile' `
+        Install-FontFile -FontFile 'NonExistingFile' `
                             -Location $Location `
-                            -Registry $Registry } | should -throw
+                            -Registry $Registry `
+                            -ErrorVariable err
+        $err.Count | should -BeGreaterThan 0
     }
     
     Context "Throws if file is not a font file" -Foreach @(
@@ -63,9 +65,13 @@ Describe "Install font file" {
             $NewRegistry = "TestRegistry:\NewRegistry"
             New-Item -Path $NewRegistry
             New-Item -Path $File -ItemType $ItemType
-            { Install-FontFile -FontFile $File `
-                               -Location $Location `
-                               -Registry $Registry } | should -throw "$File is not a font file"
+            Install-FontFile -FontFile $File `
+                             -Location $Location `
+                             -Registry $Registry `
+                             -ErrorVariable err
+        }
+        It "There should be errors" {
+            $err.Count | should -BeGreaterThan 0
         }
         It "'<file>' was not copied to <Location>" {
             Get-ChildItem -Path $Location | should -HaveCount 0
@@ -169,9 +175,47 @@ Describe "Install font file" {
 
     Context "Install several fonts at once. One file is a txt file" {
         BeforeAll {
-            $fontFileName = 'font'
-            $fontFile = "$fontFileName.ttf"
-            $registryEntry = "$fontFileName (TrueType)"
+            #region Garbage
+            $fontName = 'foo'
+            $fontFileName = "$fontName.ttf"
+            $fontFilePath = "TestDrive:\$fontFileName"
+            $registryEntry = "$fontName (TrueType)"
+            $nonFileName = 'bar.txt'
+            $nonFilePath = "TestDrive:\$nonFileName"
+
+            $FontsInstallationDirectory = 'TestDrive:\foobar'
+            $FontsInstallationRegistry = "TestRegistry:\foobar"
+
+            New-Item -Path $fontFilePath -ItemType File
+            New-Item -Path $nonFileName -ItemType File
+            New-Item -Path $FontsInstallationDirectory -ItemType Directory
+            New-Item -Path $FontsInstallationRegistry
+            #endregion Garbage
+
+            Install-FontFile -FontFile $fontFilePath, $nonFilePath `
+                             -Location $FontsInstallationDirectory `
+                             -Registry $FontsInstallationRegistry
+        }
+        It "<fontName> was installed" {
+            Test-Path $FontsInstallationDirectory\$fontFileName | should -beTrue
+        }
+        It "<registryEntry> was added to registry" {
+            Get-ItemProperty $FontsInstallationRegistry |
+                Select-Object -ExpandProperty $registryEntry |
+                should -be $fontFileName -because 'Registry entry should be created'
+        }
+        It "<registry> does not contain any other stuff" {
+            Get-ItemProperty $FontsInstallationRegistry | should -HaveCount 1
+        }
+        It "<nonFileName> was not installed" {
+            Test-Path $FontsInstallationDirectory\$nonFileName |
+                should -beFalse -because "Application doesn't install non font files"
+        }
+        AfterAll {
+            Remove-Item -Path $FontsInstallationDirectory -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsInstallationRegistry -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $fontFilePath -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $nonFileName -Recurse -Force -ErrorAction Ignore
         }
     }
     # Context "Downloads font from the provided url" {
@@ -201,5 +245,5 @@ Describe "Install font file" {
 }
 
 AfterAll {
-    Remove-Module FontUtilities
+    Remove-Module FontUtilities -ErrorAction Ignore
 }

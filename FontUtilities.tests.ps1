@@ -16,21 +16,6 @@ BeforeAll {
     }
 }
 
-# Describe "Add-Font" {
-#     Context "Get font that was added" {
-#         It "Files are copied" {
-#             $expectedUrl = "https://raw.githubusercontent.com/BusHero/test-repo/main/TestFont.zip"
-#             Add-Font -Family "TestFont" -url $expectedUrl
-#             Get-Font -Family "TestFont" | should -be $expectedUrl 
-#         }
-#     }
-#     Context "Get font that wasn't added" {
-#         It '$null is getted when no font is added' {
-#             Get-Font -Family "ThisFontDoesNotExist" | should -be $null 
-#         }
-#     }
-# }
-
 Describe "Install font file" {
     BeforeAll {
         $FontFileName = 'font.ttf'
@@ -139,6 +124,8 @@ Describe "Install font file" {
 
     Context "Installs several fonts at once" {
         BeforeAll {
+            #region Garbage
+            
             $FontNames = 'font1', 'font2'
             $FontFileNames = foreach ($font in $FontNames) { "$font.ttf" }
             $FontPaths = foreach ($fontFileName in $FontFileNames) { "TestDrive:\$fontFileName" }
@@ -149,6 +136,8 @@ Describe "Install font file" {
             foreach ($fontPath in $FontPaths) { New-Item -Path $fontPath -ItemType File }
             New-Item -Path $FontsInstallationDirectory -ItemType Directory
             New-Item -Path $FontsInstallationRegistry
+            
+            #endregion Garbage
 
             Install-FontFile -FontFile $FontPaths `
                              -Location $FontsInstallationDirectory `

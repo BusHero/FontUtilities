@@ -30,12 +30,10 @@ Describe "Install font file" {
         $RegistryEntry = 'font (TrueType)'
         $RegistryName = 'Fonts'
         $Registry = "TestRegistry:\$RegistryName"
-        
         New-Item -Path $FontFile -ItemType File
         New-Item -Path $Location -ItemType Directory
-        New-Item -Path 'TestRegistry:\' -Name $RegistryName
+        New-Item -Path $Registry
     }
-
     Context "Font is installed" {
         BeforeAll {
             Install-FontFile -FontFile $FontFile `
@@ -66,15 +64,25 @@ Describe "Install font file" {
         @{File="TestDrive:\directory"; ItemType='Directory'}
     ) {
         BeforeAll{
+            $NewRegistry = "TestRegistry:\NewRegistry"
+            New-Item -Path $NewRegistry
             New-Item -Path $File -ItemType $ItemType
-        }
-        It "'<file>' is not a font file"{
             { Install-FontFile -FontFile $File `
                                -Location $Location `
                                -Registry $Registry } | should -throw "$File is not a font file"
         }
+        It "'<file>' was not copied to <Location>" {
+            Get-ChildItem -Path $Location | should -HaveCount 0
+        }
+        It "'<file>' was not added to the <Register>" {
+            Get-Item -path $NewRegistry |
+                Select-Object -ExpandProperty Property |
+                should -HaveCount 0
+        }
+
         AfterAll {
             Remove-Item -Path $File -Recurse -Force
+            Remove-Item -Path $NewRegistry -Recurse -Force
         }
     }
 
@@ -116,12 +124,6 @@ Describe "Install font file" {
                 Remove-Item -path $NonExistingRegistry -Recurse
             }
         }
-    }
-
-    AfterAll {
-        Remove-Item -Path $FontFile -Recurse -Force
-        Remove-Item -Path $Location -Recurse -Force
-        Remove-Item -Path $Registry -Recurse -Force
     }
 }
 

@@ -1,15 +1,5 @@
 $script:fonts = @{}
 
-function Add-Font {
-	param($family, $url)
-	$script:fonts[$family] = $url
-}
-
-function Get-Font {
-	param($family)
-	$script:fonts[$family]
-}
-
 function Format-Name {
 	param (
 		[Parameter(Mandatory = $true)][System.IO.FileSystemInfo]$font
@@ -81,25 +71,20 @@ function Install-FontFile {
 			
 			$item = Get-Item -Path $file
 			$files = switch ($item.PSIsContainer) {
-				$true {Get-ChildItem $item}
+				$true {Get-ChildItem $item -Filter "*.ttf"}
 				$false {@($item)}
 			}
 			foreach ($file in $files) {
-				assertFileIsFontFile $file
-				copyFontDestination $file $Destination
-				addFontToRegistry $file $Registry
+				try {
+					assertFileIsFontFile $file
+					copyFontDestination $file $Destination
+					addFontToRegistry $file $Registry
+				} catch {
+				}
 			}
 		} catch {
 		}
 	}
 }
 
-function Donwload-FontFamily {
-	param (
-		[Parameter(Mandatory = $true)][string]$url,
-		[Parameter(Mandatory = $true)][string]$Location,
-		[Parameter(Mandatory = $true)][string]$Registry)
-	
-}
-
-Export-ModuleMember -Function Add-Font, Get-Font, Install-FontFile
+Export-ModuleMember -Function Install-FontFile

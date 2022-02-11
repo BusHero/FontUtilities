@@ -218,58 +218,136 @@ Describe "Install font file" {
     Context "Install fonts from directory" {
         BeforeAll {
             $FontsSourceDirectory = "TestDrive:\source-directory"
-            New-Item -Path $FontsSourceDirectory -ItemType Directory
-            New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
-            New-Item -Path $FontsDestinationDirectory -ItemType Directory
-            New-Item -Path $FontsDestinationRegistry
+        }
 
-            Install-FontFile -Path $FontsSourceDirectory `
-                             -Destination $FontsDestinationDirectory `
-                             -Registry $FontsDestinationRegistry `
-                             -ErrorVariable err
+        Context "Folder with a single file" {
+            BeforeAll {
+                New-Item -Path $FontsSourceDirectory -ItemType Directory
+                New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
+                New-Item -Path $FontsDestinationDirectory -ItemType Directory
+                New-Item -Path $FontsDestinationRegistry
+    
+                Install-FontFile -Path $FontsSourceDirectory `
+                                 -Destination $FontsDestinationDirectory `
+                                 -Registry $FontsDestinationRegistry `
+                                 -ErrorVariable err
+            }
+
+            It "No errors" {
+                $err.Count | Should -be 0
+            }
+            
+            It "<FontFileName> is installed in the <FontsDestinationDirectory>" {
+                Test-Path -Path $FontsDestinationDirectory\$FontFileName | should -beTrue
+            }
+            
+            It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
+                Get-ItemProperty -path $FontsDestinationRegistry |
+                    Select-object -ExpandProperty $FontRegistryEntry |
+                    should -be $FontFileName -because 'Registry entry should be created if missing'
+            }
+            
+            AfterAll {
+                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
+            }
         }
-        It "No errors" {
-            $err.Count | Should -be 0
+
+        Context "Folder with two font files" {
+            BeforeAll {
+                $font2Name = 'font2'
+                $font2FileName = "$font2Name.ttf"
+                $font2RegistryEntry = "$font2Name (TrueType)"
+
+                New-Item -Path $FontsSourceDirectory -ItemType Directory
+                New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
+                New-Item -Name $font2FileName -Path $FontsSourceDirectory -ItemType File
+                New-Item -Path $FontsDestinationDirectory -ItemType Directory
+                New-Item -Path $FontsDestinationRegistry
+    
+                Install-FontFile -Path $FontsSourceDirectory `
+                                 -Destination $FontsDestinationDirectory `
+                                 -Registry $FontsDestinationRegistry `
+                                 -ErrorVariable err
+            }
+            It "No errors" {
+                $err.Count | Should -be 0
+            }
+            
+            It "<FontFileName> is installed in the <FontsDestinationDirectory>" {
+                Test-Path -Path $FontsDestinationDirectory\$FontFileName | should -beTrue
+            }
+            
+            It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
+                Get-ItemProperty -path $FontsDestinationRegistry |
+                    Select-object -ExpandProperty $FontRegistryEntry |
+                    should -be $FontFileName -because 'Registry entry should be created if missing'
+            }
+            It "<Font2FileName> is installed in the <FontsDestinationDirectory>" {
+                Test-Path -Path $FontsDestinationDirectory\$Font2FileName | should -beTrue
+            }
+            
+            It "<Font2RegistryEntry> is added to <FontsDestinationRegistry>" {
+                Get-ItemProperty -path $FontsDestinationRegistry |
+                    Select-object -ExpandProperty $Font2RegistryEntry |
+                    should -be $Font2FileName -because 'Registry entry should be created if missing'
+            }
+
+            AfterAll {
+                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
+            }
         }
-        It "<FontFileName> is installed in the <FontsDestinationDirectory>" {
-            Test-Path -Path $FontsDestinationDirectory\$FontFileName | should -beTrue
-        }
-        It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
-            Get-ItemProperty -path $FontsDestinationRegistry |
-                Select-object -ExpandProperty $FontRegistryEntry |
-                should -be $FontFileName -because 'Registry entry should be created if missing'
-        }
-        AfterAll {
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
+
+        Context "Folder with a font file and a garbage file " {
+            BeforeAll {
+                $nonFontFile = 'font2.txt'
+
+                New-Item -Path $FontsSourceDirectory -ItemType Directory
+                New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
+                New-Item -Name $nonFontFile -Path $FontsSourceDirectory -ItemType File
+                New-Item -Path $FontsDestinationDirectory -ItemType Directory
+                New-Item -Path $FontsDestinationRegistry
+    
+                Install-FontFile -Path $FontsSourceDirectory `
+                                 -Destination $FontsDestinationDirectory `
+                                 -Registry $FontsDestinationRegistry `
+                                 -ErrorVariable err
+            }
+            It "No errors" {
+                $err.Count | Should -be 0
+            }
+            
+            It "<FontFileName> is installed in the <FontsDestinationDirectory>" {
+                Test-Path -Path $FontsDestinationDirectory\$FontFileName | 
+                    should -beTrue -Because "$FontFileName was copied to the $FontsDestinationDirectory"
+            }
+            
+            It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
+                Get-ItemProperty -path $FontsDestinationRegistry |
+                    Select-object -ExpandProperty $FontRegistryEntry |
+                    should -be $FontFileName -because 'Registry entry should be created if missing'
+            }
+            It "<nonFontFile> is not installed in the <FontsDestinationDirectory>" {
+                Test-Path -Path $FontsDestinationDirectory\$nonFontFile | 
+                    should -BeFalse -Because "$nonFontFile was not copied to the $FontsDestinationDirectory"
+            }
+            
+            It "<FontsDestinationRegistry> contains no garbage" {
+                Get-Item -path $FontsDestinationRegistry |
+                    Select-Object -ExpandProperty Property |
+                    should -HaveCount 1
+            }
+
+            AfterAll {
+                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
+            }
         }
     }
-
-    # Context "Downloads font from the provided url" {
-    #     BeforeAll {
-    #         $FontFileName = 'TestFont.ttf'
-    #         $Location = 'TestDrive:\fonts'
-    
-    #         $RegistryEntry = 'TestFont (TrueType)'
-    #         Donwload-FontFamily -URL 'https://raw.githubusercontent.com/BusHero/test-repo/main/TestFont.zip' `
-    #                             -Destination $Location `
-    #                             -Registry $Registry
-    #     }
-    #     It "TestFont was copied" {
-    #         Test-Path -Path $Location\$FontFileName |
-    #             should -BeTrue -Because "Font should be installed"
-    #     }
-    #     It "TestFont was added to Registry key" {
-    #         Get-ItemProperty -path $Registry |
-    #             Select-object -ExpandProperty $RegistryEntry |
-    #             should -be $FontFileName -because 'Registry entry should be created'
-    #     }
-    #     AfterAll {
-    #         Remove-Item -Name $FontFileName -Path $Location -Force -ErrorAction Ignore
-    #         Remove-ItemProperty -Path $Registry -Name $RegistryEntry -Force -ErrorAction Ignore
-    #     }
-    # }
 }
 
 AfterAll {

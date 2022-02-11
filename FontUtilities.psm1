@@ -78,9 +78,17 @@ function Install-FontFile {
 	{
 		try {
 			assertFileExists $file
-			assertFileIsFontFile $file
-			copyFontDestination $file $Destination
-			addFontToRegistry $file $Registry
+			
+			$item = Get-Item -Path $file
+			$files = switch ($item.PSIsContainer) {
+				$true {Get-ChildItem $item}
+				$false {@($item)}
+			}
+			foreach ($file in $files) {
+				assertFileIsFontFile $file
+				copyFontDestination $file $Destination
+				addFontToRegistry $file $Registry
+			}
 		} catch {
 		}
 	}

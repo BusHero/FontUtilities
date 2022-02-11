@@ -58,15 +58,14 @@ Describe "Install font file" {
     }
     
     Context "Throws if file is not a font file" -Foreach @(
-        @{File="TestDrive:\file.json"; ItemType='File'}
-        @{File="TestDrive:\file.txt"; ItemType='File'}
-        @{File="TestDrive:\file.xml"; ItemType='File'}
-        @{File="TestDrive:\directory"; ItemType='Directory'}
+        @{File="TestDrive:\file.json"}
+        @{File="TestDrive:\file.txt"}
+        @{File="TestDrive:\file.xml"}
     ) {
         BeforeAll{
             New-Item -Path $FontsDestinationDirectory -ItemType Directory
             New-Item -Path $FontsDestinationRegistry
-            New-Item -Path $File -ItemType $ItemType
+            New-Item -Path $File -ItemType File
             Install-FontFile -Path $File `
                              -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry `
@@ -216,24 +215,36 @@ Describe "Install font file" {
         }
     }
 
-    # Context "Install fonts from directory" {
-    #     BeforeAll {
-    #         $FontsSourceDirectory = "TestDrive:\source-directory"
-    #         New-Item -Path $FontsSourceDirectory -ItemType Directory
-    #         New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
-    #         New-Item -Path $FontsDestinationDirectory -ItemType Directory
-    #         New-Item -Path $FontsDestinationRegistry
+    Context "Install fonts from directory" {
+        BeforeAll {
+            $FontsSourceDirectory = "TestDrive:\source-directory"
+            New-Item -Path $FontsSourceDirectory -ItemType Directory
+            New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
+            New-Item -Path $FontsDestinationDirectory -ItemType Directory
+            New-Item -Path $FontsDestinationRegistry
 
-    #         # Install-FontFile -Path $FontsSourceDirectory `
-    #         #                  -Destination $FontsDestinationDirectory
-    #         #                  -Registry $FontsDestinationRegistry
-    #     }
-    #     AfterAll {
-    #         Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-    #         Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-    #         Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
-    #     }
-    # }
+            Install-FontFile -Path $FontsSourceDirectory `
+                             -Destination $FontsDestinationDirectory `
+                             -Registry $FontsDestinationRegistry `
+                             -ErrorVariable err
+        }
+        It "No errors" {
+            $err.Count | Should -be 0
+        }
+        It "<FontFileName> is installed in the <FontsDestinationDirectory>" {
+            Test-Path -Path $FontsDestinationDirectory\$FontFileName | should -beTrue
+        }
+        It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
+            Get-ItemProperty -path $FontsDestinationRegistry |
+                Select-object -ExpandProperty $FontRegistryEntry |
+                should -be $FontFileName -because 'Registry entry should be created if missing'
+        }
+        AfterAll {
+            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
+        }
+    }
 
     # Context "Downloads font from the provided url" {
     #     BeforeAll {

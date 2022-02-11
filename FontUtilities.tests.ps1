@@ -20,7 +20,7 @@ Describe "Install font file" {
             New-Item -Path $FontFilePath -ItemType File
 
             Install-FontFile -Path $FontFilePath `
-                             -Location $FontsDestinationDirectory `
+                             -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
         It "<FontFileName> is copied to the <FontsDestinationDirectory>" {
@@ -44,7 +44,7 @@ Describe "Install font file" {
             New-Item -Path $FontsDestinationDirectory -ItemType Directory
             New-Item -Path $FontsDestinationRegistry
             Install-FontFile -Path $FontFilePath `
-                            -Location $FontsDestinationDirectory `
+                            -Destination $FontsDestinationDirectory `
                             -Registry $FontsDestinationRegistry `
                             -ErrorVariable err
         }
@@ -68,7 +68,7 @@ Describe "Install font file" {
             New-Item -Path $FontsDestinationRegistry
             New-Item -Path $File -ItemType $ItemType
             Install-FontFile -Path $File `
-                             -Location $FontsDestinationDirectory `
+                             -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry `
                              -ErrorVariable err
         }
@@ -96,7 +96,7 @@ Describe "Install font file" {
             New-Item -Path $FontsDestinationRegistry
 
             Install-FontFile -Path $FontFilePath `
-                             -Location $FontsDestinationDirectory `
+                             -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
         It "<FontsDestinationDirectory> is created automatically" {
@@ -118,7 +118,7 @@ Describe "Install font file" {
             New-Item -Path $FontsDestinationDirectory -ItemType Directory
             
             Install-FontFile -Path $FontFilePath `
-                             -Location $FontsDestinationDirectory `
+                             -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
         It "<FontsDestinationRegistry> is created automatically" {
@@ -150,7 +150,7 @@ Describe "Install font file" {
             #endregion Garbage
 
             Install-FontFile -Path $FontPaths `
-                             -Location $FontsDestinationDirectory `
+                             -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
 
@@ -190,7 +190,7 @@ Describe "Install font file" {
             #endregion Garbage
 
             Install-FontFile -Path $fontFilePath, $nonFilePath `
-                             -Location $FontsDestinationDirectory `
+                             -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
         It "<fontName> was installed" {
@@ -218,19 +218,17 @@ Describe "Install font file" {
 
     # Context "Install fonts from directory" {
     #     BeforeAll {
-    #         $fontName = 'foo'
-    #         $fontFileName = "$fontName.ttf"
-    #         $registryEntry = "$fontName (TrueType)"
-    #         $FontsSourceDirectory = "TestDrive:\directory"
-    #         $FontsDestinationDirectory = 'TestDrive:\foobar'
-    #         $FontsDestinationRegistry = "TestRegistry:\foobar"
-
+    #         $FontsSourceDirectory = "TestDrive:\source-directory"
     #         New-Item -Path $FontsSourceDirectory -ItemType Directory
     #         New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
     #         New-Item -Path $FontsDestinationDirectory -ItemType Directory
     #         New-Item -Path $FontsDestinationRegistry
+
+    #         # Install-FontFile -Path $FontsSourceDirectory `
+    #         #                  -Destination $FontsDestinationDirectory
+    #         #                  -Registry $FontsDestinationRegistry
     #     }
-    #     RemoveAll {
+    #     AfterAll {
     #         Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
     #         Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
     #         Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
@@ -244,7 +242,7 @@ Describe "Install font file" {
     
     #         $RegistryEntry = 'TestFont (TrueType)'
     #         Donwload-FontFamily -URL 'https://raw.githubusercontent.com/BusHero/test-repo/main/TestFont.zip' `
-    #                             -Location $Location `
+    #                             -Destination $Location `
     #                             -Registry $Registry
     #     }
     #     It "TestFont was copied" {

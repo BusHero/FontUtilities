@@ -72,14 +72,14 @@ function Install-FontFile {
 	[CmdletBinding()]
 	param(
 		[Parameter(Mandatory = $true)][string[]]$Path,
-		[Parameter(Mandatory = $true)][string]$Location,
+		[Parameter(Mandatory = $true)][string]$Destination,
 		[Parameter(Mandatory = $true)][string]$Registry)
 	foreach ($file in $Path)
 	{
 		try {
 			assertFileExists $file
 			assertFileIsFontFile $file
-			copyFontDestination $file $Location
+			copyFontDestination $file $Destination
 			addFontToRegistry $file $Registry
 		} catch {
 		}

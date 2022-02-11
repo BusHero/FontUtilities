@@ -24,9 +24,9 @@ function Format-Name {
 #region Install-FontFile (Implementation Details)
 
 function assertFileExists($file) {
-	if (-not (Test-Path $FontFile)) 
+	if (-not (Test-Path $file)) 
 	{
-		throw "$FontFile not found"
+		throw "$file not found"
 	}
 }
 
@@ -71,10 +71,10 @@ function addFontToRegistry($FontFile, $Registry) {
 function Install-FontFile {
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $true)][string[]]$FontFile,
+		[Parameter(Mandatory = $true)][string[]]$Path,
 		[Parameter(Mandatory = $true)][string]$Location,
 		[Parameter(Mandatory = $true)][string]$Registry)
-	foreach ($file in $FontFile)
+	foreach ($file in $Path)
 	{
 		try {
 			assertFileExists $file

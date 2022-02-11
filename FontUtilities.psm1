@@ -21,10 +21,19 @@ function assertFileExists($file) {
 }
 
 function assertFileIsFontFile($file){
-	$extension = [System.IO.Path]::GetExtension($file)
-	if ($extension -ne '.ttf')
+	if (-not (isFontFile $file))
 	{
 		throw [System.Exception] "$file is not a font file"
+	}
+}
+
+function isFontFile {
+	param (
+		[string]$file
+	)
+	switch ([System.IO.Path]::GetExtension($file)) {
+		".ttf" { $true }
+		default { $false }
 	}
 }
 
@@ -71,12 +80,16 @@ function Install-FontFile {
 			
 			$item = Get-Item -Path $file
 			$files = switch ($item.PSIsContainer) {
-				$true {Get-ChildItem $item -Filter "*.ttf"}
-				$false {@($item)}
-			}
+				$true {
+					Get-ChildItem $item | 
+						Where-Object { isFontFile $_.Name }}
+				$false {
+					assertFileIsFontFile $item
+					@($item)
+				}
+			} 
 			foreach ($file in $files) {
 				try {
-					assertFileIsFontFile $file
 					copyFontDestination $file $Destination
 					addFontToRegistry $file $Registry
 				} catch {

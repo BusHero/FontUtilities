@@ -65,7 +65,7 @@ function addFontToRegistry($FontFile, $Registry) {
 function DownloadFontsArchive {
 	param([string]$uri)
 	New-Item -Path "$PSScriptRoot\.fonts" -ItemType Directory -Force
-	$fontDirectoryName = "$(New-Guid)_font"
+	$fontDirectoryName = "$([guid]::NewGuid())_font"
 	$fontDirectoryPath = "$PSScriptRoot\.fonts\$fontDirectoryName"
 	$zipFilePath = "$PSScriptRoot\.fonts\$fontDirectoryName.zip"
 

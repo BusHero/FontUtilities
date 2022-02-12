@@ -15,8 +15,6 @@ Describe "Install font file" {
     }
     Context "Font is installed" {
         BeforeAll {
-            New-Item -Path $FontsDestinationDirectory -ItemType Directory
-            New-Item -Path $FontsDestinationRegistry
             New-Item -Path $FontFilePath -ItemType File
 
             Install-FontFile -Path $FontFilePath `
@@ -33,27 +31,25 @@ Describe "Install font file" {
                 should -be $FontFileName -because 'Registry entry should be created'
         }
         AfterAll {
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontFilePath -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsDestinationRegistry, 
+                              $FontsDestinationDirectory, 
+                              $FontFilePath -Recurse -Force -ErrorAction Ignore
         }
     }
 
     Context "Throw if font file does not exist" {
         BeforeAll {
-            New-Item -Path $FontsDestinationDirectory -ItemType Directory
-            New-Item -Path $FontsDestinationRegistry
             Install-FontFile -Path $FontFilePath `
-                            -Destination $FontsDestinationDirectory `
-                            -Registry $FontsDestinationRegistry `
-                            -ErrorVariable err
+                             -Destination $FontsDestinationDirectory `
+                             -Registry $FontsDestinationRegistry `
+                             -ErrorVariable err
         }
         It "There are errors" {
             $err.Count | should -BeGreaterThan 0
         }
         AfterAll {
-            Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsDestinationDirectory,
+                              $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
         }
     }
     
@@ -64,8 +60,7 @@ Describe "Install font file" {
     ) {
         BeforeAll{
             New-Item -Path $FontsDestinationDirectory -ItemType Directory
-            New-Item -Path $FontsDestinationRegistry
-            New-Item -Path $File -ItemType File
+            New-Item -Path $FontsDestinationRegistry, $File -ItemType File
             Install-FontFile -Path $File `
                              -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry `
@@ -83,16 +78,15 @@ Describe "Install font file" {
                 should -HaveCount 0
         }
         AfterAll {
-            Remove-Item -Path $File -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $File,
+                              $FontsDestinationDirectory, 
+                              $FontsDestinationRegistry  -Recurse -Force -ErrorAction Ignore
         }
     }
 
     Context "Creates location if it doesn't exist" {
         BeforeAll {
             New-Item -Path $FontFilePath -ItemType File
-            New-Item -Path $FontsDestinationRegistry
 
             Install-FontFile -Path $FontFilePath `
                              -Destination $FontsDestinationDirectory `
@@ -105,16 +99,15 @@ Describe "Install font file" {
             Test-Path -Path $FontsDestinationDirectory\$FontFileName | should -beTrue
         }
         AfterAll {
-            Remove-Item -Path $FontFilePath -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontFilePath, 
+                              $FontsDestinationRegistry, 
+                              $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
         }
     }
 
     Context "Creates Registry key if it doesn't exist" {
         BeforeAll {
             New-Item -Path $FontFilePath -ItemType File
-            New-Item -Path $FontsDestinationDirectory -ItemType Directory
             
             Install-FontFile -Path $FontFilePath `
                              -Destination $FontsDestinationDirectory `
@@ -129,10 +122,7 @@ Describe "Install font file" {
                 should -be $FontFileName -because 'Registry entry should be created if missing'
         }
         AfterAll {
-            Remove-Item -Path $FontFilePath -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
-        }
+            Remove-Item -Path $FontFilePath, $FontsDestinationRegistry, $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore        }
     }
 
     Context "Installs several fonts at once" {
@@ -143,8 +133,8 @@ Describe "Install font file" {
             $FontPaths = foreach ($fontFileName in $FontFileNames) { "TestDrive:\$fontFileName" }
             $FontRegistryProperties = foreach ($fontName in $FontNames) { "$fontName (TrueType)" }
             foreach ($fontPath in $FontPaths) { New-Item -Path $fontPath -ItemType File }
-            New-Item -Path $FontsDestinationDirectory -ItemType Directory
-            New-Item -Path $FontsDestinationRegistry
+            New-Item -Path $FontsDestinationRegistry,
+                           $FontsDestinationDirectory -ItemType Directory
             
             #endregion Garbage
 
@@ -169,10 +159,9 @@ Describe "Install font file" {
         }
 
         AfterAll {
-            $fonts | Remove-Item -Force -ErrorAction Ignore
-            $font | Remove-Item -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path ($FontPaths +
+                               $FontsDestinationRegistry + 
+                               $FontsDestinationDirectory) -Recurse -Force -ErrorAction Ignore
         }
     }
 
@@ -182,10 +171,8 @@ Describe "Install font file" {
             $nonFileName = 'bar.txt'
             $nonFilePath = "TestDrive:\$nonFileName"
 
-            New-Item -Path $fontFilePath -ItemType File
-            New-Item -Path $nonFilePath -ItemType File
-            New-Item -Path $FontsDestinationDirectory -ItemType Directory
-            New-Item -Path $FontsDestinationRegistry
+            New-Item -Path $fontFilePath,
+                           $nonFilePath -ItemType File
             #endregion Garbage
 
             Install-FontFile -Path $fontFilePath, $nonFilePath `
@@ -208,10 +195,10 @@ Describe "Install font file" {
                 should -beFalse -because "Application doesn't install non font files"
         }
         AfterAll {
-            Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $fontFilePath -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $nonFilePath -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsDestinationDirectory, 
+                              $FontsDestinationRegistry, 
+                              $fontFilePath, 
+                              $nonFilePath -Recurse -Force -ErrorAction Ignore
         }
     }
 
@@ -222,10 +209,7 @@ Describe "Install font file" {
 
         Context "Folder with a single file" {
             BeforeAll {
-                New-Item -Path $FontsSourceDirectory -ItemType Directory
-                New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
-                New-Item -Path $FontsDestinationDirectory -ItemType Directory
-                New-Item -Path $FontsDestinationRegistry
+                New-Item -Path $FontsSourceDirectory\$fontFileName -Force -ItemType File
     
                 Install-FontFile -Path $FontsSourceDirectory `
                                  -Destination $FontsDestinationDirectory `
@@ -248,9 +232,8 @@ Describe "Install font file" {
             }
             
             AfterAll {
-                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-                Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsDestinationRegistry, 
+                                  $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
             }
         }
 
@@ -260,11 +243,8 @@ Describe "Install font file" {
                 $font2FileName = "$font2Name.ttf"
                 $font2RegistryEntry = "$font2Name (TrueType)"
 
-                New-Item -Path $FontsSourceDirectory -ItemType Directory
-                New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
-                New-Item -Name $font2FileName -Path $FontsSourceDirectory -ItemType File
-                New-Item -Path $FontsDestinationDirectory -ItemType Directory
-                New-Item -Path $FontsDestinationRegistry
+                New-Item -Path $FontsSourceDirectory\$fontFileName,
+                               $FontsSourceDirectory\$font2FileName -Force -ItemType File
     
                 Install-FontFile -Path $FontsSourceDirectory `
                                  -Destination $FontsDestinationDirectory `
@@ -295,21 +275,17 @@ Describe "Install font file" {
             }
 
             AfterAll {
-                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-                Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsDestinationRegistry, 
+                                  $FontsSourceDirectory,
+                                  $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
             }
         }
 
         Context "Folder with a font file and a garbage file " {
             BeforeAll {
                 $nonFontFile = 'font2.txt'
-
-                New-Item -Path $FontsSourceDirectory -ItemType Directory
-                New-Item -Name $fontFileName -Path $FontsSourceDirectory -ItemType File
-                New-Item -Name $nonFontFile -Path $FontsSourceDirectory -ItemType File
-                New-Item -Path $FontsDestinationDirectory -ItemType Directory
-                New-Item -Path $FontsDestinationRegistry
+                New-Item -Path $FontsSourceDirectory\$fontFileName,
+                               $FontsSourceDirectory\$nonFontFile -Force -ItemType File
     
                 Install-FontFile -Path $FontsSourceDirectory `
                                  -Destination $FontsDestinationDirectory `
@@ -342,48 +318,74 @@ Describe "Install font file" {
             }
 
             AfterAll {
-                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-                Remove-Item -Path $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsDestinationRegistry,
+                                  $FontsDestinationDirectory,
+                                  $FontsSourceDirectory -Recurse -Force -ErrorAction Ignore
             }
         }
     }
 
     Context "Download fonts" {
         BeforeAll {
-            $FontZipName = 'TestFont.zip'
-            $FontZipPath = "$TestDrive\$FontZipName"
-            $url = "http://localhost:8000/$FontZipName"
-            
-            New-Item -Path $FontFilePath -ItemType File
-            Compress-Archive -Path $FontFilePath -DestinationPath $FontZipPath
             $job = Start-Job -Verbose -ScriptBlock { 
                 param($path)
                 python -m http.server 8000 -d $path 
             } -ArgumentList $TestDrive
-
-            Install-FontFile -Registry $FontsDestinationRegistry `
-                             -Destination $FontsDestinationDirectory `
-                             -Url $url `
-                             -ErrorVariable err
+            $server = "http://localhost:8000"
         }
-        It "No errors should happen" {
-            $err | Should -HaveCount 0 
-        }
-        It "<FontFileName> is installed to <FontsDestinationDirectory>" {
-            Test-Path "$FontsDestinationDirectory\$FontFileName" | should -beTrue
-        }
-        It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
-            Get-ItemProperty -path $FontsDestinationRegistry |
+        Context "A valid link" {
+            BeforeAll {
+                $NonFontFileName = 'test.txt'
+                $NonFontFilePath = "$TestDrive\$NonFontFileName"
+                $FontZipName = 'TestFont.zip'
+                $FontZipPath = "$TestDrive\$FontZipName"
+                $url = "$server/$FontZipName"
+                
+                New-Item -Path $FontFilePath, 
+                               $NonFontFilePath -ItemType File
+                Compress-Archive -Path $FontFilePath, $NonFontFilePath -DestinationPath $FontZipPath
+                Install-FontFile -Registry $FontsDestinationRegistry `
+                                 -Destination $FontsDestinationDirectory `
+                                 -Url $url `
+                                 -ErrorVariable err
+            }
+            It "No errors should happen" {
+                $err | Should -HaveCount 0 
+            }
+            It "<FontFileName> is installed to <FontsDestinationDirectory>" {
+                Test-Path "$FontsDestinationDirectory\$FontFileName" | should -beTrue
+            }
+            It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
+                Get-ItemProperty -path $FontsDestinationRegistry |
                 Select-object -ExpandProperty $FontRegistryEntry |
                 should -be $FontFileName -because 'Registry entry should be created if missing'
-        }
+            }
+            AfterAll {
+                Remove-Item -Path $FontFilePath,
+                                  $NonFontFilePath, 
+                                  $FontFilePath, 
+                                  $FontsDestinationDirectory, 
+                                  $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+            }
+        }   
+        # Context "An invalid link" {
+        #     BeforeAll {
+        #         $NonExistingFile = "NonExistingFont_$(New-Guid).ttf"
+        #         $uri = "$Server/$NonExistingFile"
+                
+        #         Install-FontFile -Registry $FontsDestinationRegistry `
+        #                          -Destination $FontsDestinationDirectory `
+        #                          -Url $url `
+        #                          -ErrorVariable err
+        #     }
+
+        #     AfterAll {
+        #         Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
+        #         Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+        #     }
+        # }
         AfterAll {
             Remove-Job -Id $job.Id -Force
-            Remove-Item -Path $FontFilePath -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontZipPath -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
-            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
         }
     }
 }

@@ -38,10 +38,7 @@ function isFontFile {
 }
 
 function copyFontDestination($FontFile, $location) {
-	if (-not (Test-Path $Location))
-	{
-		New-Item -Path $Location -ItemType Directory
-	}
+	New-Item -Path $Location -ItemType Directory -Force
 	Copy-Item -Path $FontFile -Destination $Location 
 }
 
@@ -104,8 +101,8 @@ function Install-FontFile {
 			} 
 			foreach ($file in $files) {
 				try {
-					copyFontDestination $file $Destination
-					addFontToRegistry $file $Registry
+					copyFontDestination $file.FullName $Destination
+					addFontToRegistry $file.FullName $Registry
 				} catch {
 				}
 			}

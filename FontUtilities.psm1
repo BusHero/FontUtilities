@@ -84,36 +84,39 @@ function Install-FontFile {
 		[string]$url,
 		[Parameter(Mandatory = $true)][string]$Destination,
 		[Parameter(Mandatory = $true)][string]$Registry)
-	if ($url)
-	{
-		$Path += DownloadFontsArchive $url
-	}
-
-	foreach ($file in $Path)
-	{
-		try {
-			assertFileExists $file
-			
-			$item = Get-Item -Path $file
-			$files = switch ($item.PSIsContainer) {
-				$true {
-					Get-ChildItem $item | 
-						Where-Object { isFontFile $_.Name }}
-				$false {
-					assertFileIsFontFile $item
-					@($item)
-				}
-			} 
-			foreach ($file in $files) {
-				try {
-					copyFontDestination $file.FullName $Destination
-					addFontToRegistry $file.FullName $Registry
-				} catch {
-				}
-			}
-		} catch {
+	try {
+		if ($url)
+		{
+			$Path += DownloadFontsArchive $url
 		}
-	}
+
+		foreach ($file in $Path)
+		{
+			try {
+				assertFileExists $file
+				
+				$item = Get-Item -Path $file
+				$files = switch ($item.PSIsContainer) {
+					$true {
+						Get-ChildItem $item | 
+							Where-Object { isFontFile $_.Name }}
+					$false {
+						assertFileIsFontFile $item
+						@($item)
+					}
+				} 
+				foreach ($file in $files) {
+					try {
+						copyFontDestination $file.FullName $Destination
+						addFontToRegistry $file.FullName $Registry
+					} catch {
+					}
+				}
+			} catch {
+			}
+		}
+	} catch {}
+
 }
 
 Export-ModuleMember -Function Install-FontFile

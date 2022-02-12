@@ -368,22 +368,30 @@ Describe "Install font file" {
                                   $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
             }
         }   
-        # Context "An invalid link" {
-        #     BeforeAll {
-        #         $NonExistingFile = "NonExistingFont_$(New-Guid).ttf"
-        #         $uri = "$Server/$NonExistingFile"
+        Context "An invalid link" {
+            BeforeAll {
+                $NonExistingFile = "NonExistingFont_$(New-Guid).ttf"
+                $url = "$Server/$NonExistingFile"
                 
-        #         Install-FontFile -Registry $FontsDestinationRegistry `
-        #                          -Destination $FontsDestinationDirectory `
-        #                          -Url $url `
-        #                          -ErrorVariable err
-        #     }
+                Install-FontFile -Registry $FontsDestinationRegistry `
+                                 -Destination $FontsDestinationDirectory `
+                                 -Url $url `
+                                 -ErrorVariable err
+            }
+            It "A error should occur" {
+                $err.Count | should -BeGreaterThan 0
+            }
+            AfterAll {
+                Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+            }
+        }
+        Context "A non zip file" {
 
-        #     AfterAll {
-        #         Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
-        #         Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
-        #     }
-        # }
+        }
+        Context "A zip file that does not contain fonts" {
+            
+        }
         AfterAll {
             Remove-Job -Id $job.Id -Force
         }

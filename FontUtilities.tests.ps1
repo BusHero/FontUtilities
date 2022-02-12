@@ -370,7 +370,7 @@ Describe "Install font file" {
         }   
         Context "An invalid link" {
             BeforeAll {
-                $NonExistingFile = "NonExistingFont_$(New-Guid).ttf"
+                $NonExistingFile = "NonExistingFont_$([guid]::NewGuid()).ttf"
                 $url = "$Server/$NonExistingFile"
                 
                 Install-FontFile -Registry $FontsDestinationRegistry `

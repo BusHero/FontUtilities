@@ -1,12 +1,10 @@
-# 1. User can register fonts(Font family + url)
-# 2. User can get font's url
-
 BeforeAll { 
     Import-Module .\FontUtilities.psm1
 }
 
 Describe "Install font file" {
     BeforeAll {
+        $NonFontFileName = 'foo.txt'
         $FontFileName = 'font.ttf'
         $FontFilePath = "TestDrive:\$FontFileName"
         $FontRegistryEntry = 'font (TrueType)'
@@ -382,15 +380,33 @@ Describe "Install font file" {
                 $err.Count | should -BeGreaterThan 0
             }
             AfterAll {
-                Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
-                Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-Item -Path $FontsDestinationDirectory,
+                                  $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
             }
         }
         Context "A non zip file" {
-
-        }
-        Context "A zip file that does not contain fonts" {
-            
+            BeforeAll {
+                $url = "$Server/$NonFontFileName"
+                New-Item -Path $TestDrive\$NonFontFileName -ItemType File -Force
+                Install-FontFile -Registry $FontsDestinationRegistry `
+                                 -Destination $FontsDestinationDirectory `
+                                 -Url $url `
+                                 -ErrorVariable err
+            }
+            It "A error should occur" {
+                $err.Count | should -BeGreaterThan 0
+            }
+            It "<FontsDestinationDirectory> should not exists"{
+                Test-Path $FontsDestinationDirectory | Should -BeFalse
+            }
+            It "<FontsDestinationRegistry> should not exist" {
+                Test-Path $FontsDestinationRegistry | should -BeFalse
+            }
+            AfterAll {
+                Remove-Item -Path $FontsDestinationDirectory,
+                                  $TestDrive\$NonFontFileName,
+                                  $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+            }
         }
         AfterAll {
             Remove-Job -Id $job.Id -Force

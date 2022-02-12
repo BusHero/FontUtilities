@@ -69,7 +69,7 @@ function DownloadFontsArchive {
 	$fontDirectoryPath = "$PSScriptRoot\.fonts\$fontDirectoryName"
 	$zipFilePath = "$PSScriptRoot\.fonts\$fontDirectoryName.zip"
 
-	Invoke-WebRequest -Uri $uri -OutFile $zipFilePath
+	Invoke-WebRequest -Uri $uri -Method Get -ContentType 'application/zip' -OutFile $zipFilePath
 	Expand-Archive -Path $zipFilePath -DestinationPath $fontDirectoryPath
 	
 	$fontDirectoryPath

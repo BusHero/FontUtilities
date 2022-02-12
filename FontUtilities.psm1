@@ -62,6 +62,19 @@ function addFontToRegistry($FontFile, $Registry) {
 		-ErrorAction SilentlyContinue | Out-Null
 }
 
+function DownloadFontsArchive {
+	param([string]$uri)
+	New-Item -Path "$PSScriptRoot\.fonts" -ItemType Directory -Force
+	$fontDirectoryName = "$(New-Guid)_font"
+	$fontDirectoryPath = "$PSScriptRoot\.fonts\$fontDirectoryName"
+	$zipFilePath = "$PSScriptRoot\.fonts\$fontDirectoryName.zip"
+
+	Invoke-WebRequest -Uri $uri -OutFile $zipFilePath
+	Expand-Archive -Path $zipFilePath -DestinationPath $fontDirectoryPath
+	
+	$fontDirectoryPath
+}
+
 #endregion
 
 function Install-FontFile {
@@ -73,15 +86,7 @@ function Install-FontFile {
 		[Parameter(Mandatory = $true)][string]$Registry)
 	if ($url)
 	{
-		New-Item -Path "$PSScriptRoot\.fonts" -ItemType Directory -Force
-		$fontDirectoryName = "$(New-Guid)_font"
-		$fontDirectoryPath = "$PSScriptRoot\.fonts\$fontDirectoryName"
-		$zipFilePath = "$PSScriptRoot\.fonts\$fontDirectoryName.zip"
-
-		Invoke-WebRequest -Uri $url -OutFile $zipFilePath
-		Expand-Archive -Path $zipFilePath -DestinationPath $fontDirectoryPath
-
-		$Path = @($fontDirectoryPath)
+		$Path += DownloadFontsArchive $url
 	}
 
 	foreach ($file in $Path)

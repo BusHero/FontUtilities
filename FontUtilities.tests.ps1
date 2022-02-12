@@ -348,6 +348,44 @@ Describe "Install font file" {
             }
         }
     }
+
+    Context "Download fonts" {
+        BeforeAll {
+            $FontZipName = 'TestFont.zip'
+            $FontZipPath = "$TestDrive\$FontZipName"
+            $url = "http://localhost:8000/$FontZipName"
+            
+            New-Item -Path $FontFilePath -ItemType File
+            Compress-Archive -Path $FontFilePath -DestinationPath $FontZipPath
+            $job = Start-Job -Verbose -ScriptBlock { 
+                param($path)
+                python -m http.server 8000 -d $path 
+            } -ArgumentList $TestDrive
+
+            Install-FontFile -Registry $FontsDestinationRegistry `
+                             -Destination $FontsDestinationDirectory `
+                             -Url $url `
+                             -ErrorVariable err
+        }
+        It "No errors should happen" {
+            $err | Should -HaveCount 0 
+        }
+        It "<FontFileName> is installed to <FontsDestinationDirectory>" {
+            Test-Path "$FontsDestinationDirectory\$FontFileName" | should -beTrue
+        }
+        It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
+            Get-ItemProperty -path $FontsDestinationRegistry |
+                Select-object -ExpandProperty $FontRegistryEntry |
+                should -be $FontFileName -because 'Registry entry should be created if missing'
+        }
+        AfterAll {
+            Remove-Job -Id $job.Id -Force
+            Remove-Item -Path $FontFilePath -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontZipPath -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsDestinationDirectory -Recurse -Force -ErrorAction Ignore
+            Remove-Item -Path $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+        }
+    }
 }
 
 AfterAll {

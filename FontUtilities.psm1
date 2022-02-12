@@ -70,9 +70,23 @@ function addFontToRegistry($FontFile, $Registry) {
 function Install-FontFile {
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $true)][string[]]$Path,
+		[string[]]$Path,
+		[string]$url,
 		[Parameter(Mandatory = $true)][string]$Destination,
 		[Parameter(Mandatory = $true)][string]$Registry)
+	if ($url)
+	{
+		New-Item -Path "$PSScriptRoot\.fonts" -ItemType Directory -Force
+		$fontDirectoryName = "$(New-Guid)_font"
+		$fontDirectoryPath = "$PSScriptRoot\.fonts\$fontDirectoryName"
+		$zipFilePath = "$PSScriptRoot\.fonts\$fontDirectoryName.zip"
+
+		Invoke-WebRequest -Uri $url -OutFile $zipFilePath
+		Expand-Archive -Path $zipFilePath -DestinationPath $fontDirectoryPath
+
+		$Path = @($fontDirectoryPath)
+	}
+
 	foreach ($file in $Path)
 	{
 		try {

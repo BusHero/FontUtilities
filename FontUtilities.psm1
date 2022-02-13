@@ -27,10 +27,7 @@ function assertFileIsFontFile($file){
 	}
 }
 
-function isFontFile {
-	param (
-		[string]$file
-	)
+function isFontFile($file) {
 	switch ([System.IO.Path]::GetExtension($file)) {
 		".ttf" { $true }
 		default { $false }
@@ -43,7 +40,7 @@ function copyFontDestination($FontFile, $location) {
 }
 
 function ensureRegistry($Registry) {
-	if (-not (Test-Path $Registry))
+	if (!(Test-Path $Registry))
 	{
 		New-Item -Path $Registry
 	}
@@ -53,8 +50,7 @@ function addFontToRegistry($FontFile, $Registry) {
 	ensureRegistry $Registry
 
 	$font = Get-Item $FontFile 
-	$formattedName = Format-Name $font
-	New-ItemProperty -Name $formattedName `
+	New-ItemProperty -Name $(Format-Name $font) `
 		-Path $Registry `
 		-PropertyType string `
 		-Value $font.Name `
@@ -64,8 +60,11 @@ function addFontToRegistry($FontFile, $Registry) {
 
 function DownloadFontsArchive {
 	param([string]$uri)
+	if (-not $uri) {
+		return
+	}
 	New-Item -Path "$PSScriptRoot\.fonts" -ItemType Directory -Force
-	$fontDirectoryName = "$([guid]::NewGuid())_font"
+	$fontDirectoryName = "font_$([guid]::NewGuid())"
 	$fontDirectoryPath = "$PSScriptRoot\.fonts\$fontDirectoryName"
 	$zipFilePath = "$PSScriptRoot\.fonts\$fontDirectoryName.zip"
 
@@ -85,10 +84,7 @@ function Install-FontFile {
 		[Parameter(Mandatory = $true)][string]$Destination,
 		[Parameter(Mandatory = $true)][string]$Registry)
 	try {
-		if ($url)
-		{
-			$Path += DownloadFontsArchive $url
-		}
+		$Path += DownloadFontsArchive $url
 
 		foreach ($file in $Path)
 		{
@@ -112,11 +108,9 @@ function Install-FontFile {
 					} catch {
 					}
 				}
-			} catch {
-			}
+			} catch { }
 		}
 	} catch {}
-
 }
 
 Export-ModuleMember -Function Install-FontFile

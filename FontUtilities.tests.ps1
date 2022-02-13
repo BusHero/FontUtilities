@@ -391,7 +391,8 @@ Describe "Install font file" {
                 Install-FontFile -Registry $FontsDestinationRegistry `
                                  -Destination $FontsDestinationDirectory `
                                  -Url $url `
-                                 -ErrorVariable err
+                                 -ErrorVariable err `
+                                 -ErrorAction Ignore
             }
             It "A error should occur" {
                 $err.Count | should -BeGreaterThan 0

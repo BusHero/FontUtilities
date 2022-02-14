@@ -87,11 +87,11 @@ function DownloadFontsArchive([Parameter(ValueFromPipeline)][string]$uri) {
 	if (-not $uri) {
 		return
 	}
-	New-Item -Path "$PSScriptRoot\.fonts" -ItemType Directory -Force
 	$fontDirectoryName = "font_$([guid]::NewGuid())"
 	$fontDirectoryPath = "$PSScriptRoot\.fonts\$fontDirectoryName"
 	$zipFilePath = "$PSScriptRoot\.fonts\$fontDirectoryName.zip"
-
+	
+	New-Item -Path "$PSScriptRoot\.fonts" -ItemType Directory -Force
 	Invoke-WebRequest -Uri $uri -Method Get -ContentType 'application/zip' -OutFile $zipFilePath
 	Expand-Archive -Path $zipFilePath -DestinationPath $fontDirectoryPath
 	

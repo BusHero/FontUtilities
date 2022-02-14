@@ -410,7 +410,7 @@ Describe "Install font file" {
                                   $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
             }
         }
-        Context "Install Font File by specifying the family" {
+        Context "Install Fonts by specifying the family" {
             BeforeAll {
                 $FontZipName = 'TestFont.zip'
                 New-Item -Path $FontFilePath -ItemType File
@@ -422,16 +422,66 @@ Describe "Install font file" {
                                  -Destination $FontsDestinationDirectory `
                                  -Family $FontName
             }
-            It "No errors should happen" {
+            It "Errors should happen" {
                 $err | Should -HaveCount 0 
             }
-            It "<FontFileName> is installed to <FontsDestinationDirectory>" {
+            It "<FontsDestinationDirectory> is not created" {
                 Test-Path "$FontsDestinationDirectory\$FontFileName" | should -beTrue
             }
-            It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
+            It "<FontsDestinationRegistry> is not created" {
                 Get-ItemProperty -path $FontsDestinationRegistry |
                 Select-object -ExpandProperty $FontRegistryEntry |
                 should -be $FontFileName -because 'Registry entry should be created if missing'
+            }
+            AfterAll {
+                Remove-Item -Path $FontFilePath,
+                                  $FontFilePath, 
+                                  $FontsDestinationDirectory, 
+                                  $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-FontFamily -All
+            }
+        }
+        Context "Trying to install a family that does not exist" {
+            BeforeAll {
+                $FontName = 'no-fontfamily'
+                Install-FontFile -Registry $FontsDestinationRegistry `
+                                 -Destination $FontsDestinationDirectory `
+                                 -Family $FontName `
+                                 -ErrorVariable err
+            }
+            It "No errors should happen" {
+                $err.Count | Should -BeGreaterThan 0 
+            }
+            It "<FontFileName> is installed to <FontsDestinationDirectory>" {
+                Test-Path -Path "$FontsDestinationDirectory" | should -beFalse
+            }
+            It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
+                Test-Path -Path $FontsDestinationRegistry | should -BeFalse
+            }
+            AfterAll {
+                Remove-Item -Path $FontFilePath,
+                                  $FontFilePath, 
+                                  $FontsDestinationDirectory, 
+                                  $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-FontFamily -All
+            }
+        }
+        Context "Trying to install a family from an invalid link" {
+            BeforeAll {
+                Add-FontFamily -Family $FontName "$server/no-font.zip"
+                Install-FontFile -Registry $FontsDestinationRegistry `
+                                 -Destination $FontsDestinationDirectory `
+                                 -Family $FontName `
+                                 -ErrorVariable err
+            }
+            It "Errors should happen" {
+                $err.Count | Should -BeGreaterThan 0 
+            }
+            It "<FontsDestinationDirectory> is not created" {
+                Test-Path -Path "$FontsDestinationDirectory" | should -beFalse
+            }
+            It "<FontsDestinationRegistry> is not created" {
+                Test-Path -Path $FontsDestinationRegistry | should -BeFalse
             }
             AfterAll {
                 Remove-Item -Path $FontFilePath,
@@ -445,8 +495,6 @@ Describe "Install font file" {
             Remove-Job -Id $job.Id -Force
         }
     }
-
-    
 
     Context "Add font family" {
         It "Add-FontFamily" {

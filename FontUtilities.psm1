@@ -83,8 +83,7 @@ function addFontToRegistry($FontFile, $Registry) {
 		-ErrorAction SilentlyContinue | Out-Null
 }
 
-function DownloadFontsArchive {
-	param([string]$uri)
+function DownloadFontsArchive([Parameter(ValueFromPipeline)][string]$uri) {
 	if (-not $uri) {
 		return
 	}
@@ -104,12 +103,20 @@ function DownloadFontsArchive {
 function Install-FontFile {
 	[CmdletBinding()]
 	param(
-		[string[]]$Path,
-		[string]$url,
-		[Parameter(Mandatory = $true)][string]$Destination,
-		[Parameter(Mandatory = $true)][string]$Registry)
+		[ValidateNotNullOrEmpty()][string[]]$Path,
+		[ValidateNotNullOrEmpty()][string]$url,
+		[ValidateNotNullOrEmpty()][string]$Family,
+		[Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Destination,
+		[Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Registry)
 	try {
-		$Path += DownloadFontsArchive $url
+		if ($url)
+		{
+			$Path += DownloadFontsArchive $url
+		}
+		if ($Family)
+		{
+			$Path += Get-FontFamily -Family $Family | DownloadFontsArchive
+		}
 
 		foreach ($file in $Path)
 		{

@@ -4,10 +4,11 @@ BeforeAll {
 
 Describe "Install font file" {
     BeforeAll {
+        $FontName = 'font'
         $NonFontFileName = 'foo.txt'
-        $FontFileName = 'font.ttf'
+        $FontFileName = "$FontName.ttf"
         $FontFilePath = "TestDrive:\$FontFileName"
-        $FontRegistryEntry = 'font (TrueType)'
+        $FontRegistryEntry = "$FontName (TrueType)"
         $FontsDestinationDirectory = 'TestDrive:\fonts'
         $FontsDestinationRegistry = 'TestRegistry:\fonts'
     }
@@ -409,10 +410,43 @@ Describe "Install font file" {
                                   $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
             }
         }
+        Context "Install Font File by specifying the family" {
+            BeforeAll {
+                $FontZipName = 'TestFont.zip'
+                New-Item -Path $FontFilePath -ItemType File
+                Compress-Archive -Path $FontFilePath -DestinationPath "$TestDrive\$FontZipName"
+                
+                Add-FontFamily -Family $FontName -Uri "$server/$FontZipName"
+
+                Install-FontFile -Registry $FontsDestinationRegistry `
+                                 -Destination $FontsDestinationDirectory `
+                                 -Family $FontName
+            }
+            It "No errors should happen" {
+                $err | Should -HaveCount 0 
+            }
+            It "<FontFileName> is installed to <FontsDestinationDirectory>" {
+                Test-Path "$FontsDestinationDirectory\$FontFileName" | should -beTrue
+            }
+            It "<FontRegistryEntry> is added to <FontsDestinationRegistry>" {
+                Get-ItemProperty -path $FontsDestinationRegistry |
+                Select-object -ExpandProperty $FontRegistryEntry |
+                should -be $FontFileName -because 'Registry entry should be created if missing'
+            }
+            AfterAll {
+                Remove-Item -Path $FontFilePath,
+                                  $FontFilePath, 
+                                  $FontsDestinationDirectory, 
+                                  $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
+                Remove-FontFamily -All
+            }
+        }
         AfterAll {
             Remove-Job -Id $job.Id -Force
         }
     }
+
+    
 
     Context "Add font family" {
         It "Add-FontFamily" {

@@ -1,5 +1,33 @@
 $script:fonts = @{}
 
+function Add-FontFamily{
+	param([ValidateNotNullOrEmpty()][string]$Family,
+		  [ValidateNotNullOrEmpty()][string]$Uri)
+	$script:fonts[$Family] = $Uri
+}
+
+function Get-FontFamily {
+	param([ValidateNotNullOrEmpty()][string]$Family,
+		  [switch]$All)
+	if ($All) {
+		return $script:fonts.Clone()
+	}
+	return $script:fonts[$Family]
+}
+
+function Remove-FontFamily {
+	param (
+		[ValidateNotNullOrEmpty()][string]$Family,
+		[switch]$All
+	)
+	if ($All) {
+		$script:fonts = @{}
+	} else {
+		$script:fonts.Remove($Family)
+	}
+}
+
+#region Install-FontFile (Implementation Details)
 function Format-Name {
 	param (
 		[Parameter(Mandatory = $true)][System.IO.FileSystemInfo]$font
@@ -9,9 +37,6 @@ function Format-Name {
 		".otf" { "$($font.BaseName) (OpenType)" }
 	}
 }
-
-
-#region Install-FontFile (Implementation Details)
 
 function assertFileExists($file) {
 	if (-not (Test-Path $file)) 
@@ -113,4 +138,7 @@ function Install-FontFile {
 	} catch {}
 }
 
-Export-ModuleMember -Function Install-FontFile
+Export-ModuleMember -Function Install-FontFile,
+							  Add-FontFamily,
+							  Get-FontFamily,
+							  Remove-FontFamily

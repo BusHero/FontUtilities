@@ -413,6 +413,30 @@ Describe "Install font file" {
             Remove-Job -Id $job.Id -Force
         }
     }
+
+    Context "Add font family" {
+        It "Add-FontFamily" {
+            $FontFamily = 'Roboto'
+            $url = 'https://google.com'
+            
+            Add-FontFamily -Family $FontFamily -Url = $url
+            Get-FontFamily -Family $FontFamily | should -be $url
+            
+            Remove-FontFamily -Family $FontFamily
+            Get-FontFamily -Family $FontFamily | should -BeNullOrEmpty
+        }
+        It "Get-AllFonts" {
+            Add-FontFamily -Family 'Roboto1' -Url = 'https://google1.com'
+            Add-FontFamily -Family 'Cambera1' -Url = 'https://google2.com'
+            Get-FontFamily -All | should -BeLike @{
+                'Roboto1' = 'https://google1.com';
+                'Cambera1' = 'https://google2.com'
+            }
+            
+            Remove-FontFamily -All
+            Get-FontFamily -All | should -BeNullOrEmpty
+        }
+    }
 }
 
 AfterAll {

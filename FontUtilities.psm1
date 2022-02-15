@@ -1,18 +1,32 @@
-$script:fonts = @{}
+$script:FontsConfig = "$PSScriptRoot\fonts.json"
+
+function getFontsHashtable {
+	switch (Test-Path -Path $script:FontsConfig) {
+		$true { Get-Content -Path $script:FontsConfig | ConvertFrom-Json -AsHashtable }
+		Default { @{} }
+	}
+}
+
+function saveFontsHashtable($fonts) {
+	$fonts | ConvertTo-Json | Out-File -FilePath $script:FontsConfig
+}
 
 function Add-FontFamily{
 	param([ValidateNotNullOrEmpty()][string]$Family,
 		  [ValidateNotNullOrEmpty()][string]$Uri)
-	$script:fonts[$Family] = $Uri
+	$fonts = getFontsHashtable
+	$fonts[$Family] = $Uri
+	ConvertTo-Json $fonts | Out-File -FilePath $script:FontsConfig
 }
 
 function Get-FontFamily {
 	param([ValidateNotNullOrEmpty()][string]$Family,
 		  [switch]$All)
+	$fonts = getFontsHashtable
 	if ($All) {
-		return $script:fonts.Clone()
+		return $fonts.Clone()
 	}
-	return $script:fonts[$Family]
+	return $fonts[$Family]
 }
 
 function Remove-FontFamily {
@@ -20,11 +34,14 @@ function Remove-FontFamily {
 		[ValidateNotNullOrEmpty()][string]$Family,
 		[switch]$All
 	)
+	$fonts = getFontsHashtable
+
 	if ($All) {
-		$script:fonts = @{}
+		$fonts = @{}
 	} else {
-		$script:fonts.Remove($Family)
+		$fonts.Remove($Family)
 	}
+	saveFontsHashtable $fonts
 }
 
 #region Install-FontFile (Implementation Details)
@@ -148,4 +165,5 @@ function Install-FontFile {
 Export-ModuleMember -Function Install-FontFile,
 							  Add-FontFamily,
 							  Get-FontFamily,
-							  Remove-FontFamily
+							  Remove-FontFamily `
+					-Variable FontsConfig

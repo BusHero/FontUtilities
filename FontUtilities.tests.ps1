@@ -341,7 +341,7 @@ Describe "Install font file" {
                 $url = "$server/$FontZipName"
                 
                 New-Item -Path $FontFilePath, 
-                               $NonFontFilePath -ItemType File
+                               $NonFontFilePath -Force -ItemType File
                 Compress-Archive -Path $FontFilePath, $NonFontFilePath -DestinationPath $FontZipPath
                 Install-FontFile -Registry $FontsDestinationRegistry `
                                  -Destination $FontsDestinationDirectory `
@@ -412,9 +412,10 @@ Describe "Install font file" {
         }
         Context "Install Fonts by specifying the family" {
             BeforeAll {
-                $FontZipName = 'TestFont.zip'
+                $FontZipName = "TestFont.zip"
+                $FontZipPath = "$TestDrive\$FontZipName"
                 New-Item -Path $FontFilePath -ItemType File
-                Compress-Archive -Path $FontFilePath -DestinationPath "$TestDrive\$FontZipName"
+                Compress-Archive -Path $FontFilePath -DestinationPath $FontZipPath -Force
                 
                 Add-FontFamily -Family $FontName -Uri "$server/$FontZipName"
 
@@ -423,7 +424,7 @@ Describe "Install font file" {
                                  -Family $FontName
             }
             It "Errors should happen" {
-                $err | Should -HaveCount 0 
+                $err.Count | Should -Be 0 
             }
             It "<FontsDestinationDirectory> is not created" {
                 Test-Path "$FontsDestinationDirectory\$FontFileName" | should -beTrue
@@ -435,7 +436,7 @@ Describe "Install font file" {
             }
             AfterAll {
                 Remove-Item -Path $FontFilePath,
-                                  $FontFilePath, 
+                                  $FontZipPath, 
                                   $FontsDestinationDirectory, 
                                   $FontsDestinationRegistry -Recurse -Force -ErrorAction Ignore
                 Remove-FontFamily -All
@@ -518,15 +519,61 @@ Describe "Install font file" {
             Remove-FontFamily -All
             Get-FontFamily -All | should -BeNullOrEmpty
         }
-        It "asdasd" {
-            Add-FontFamily -Family 'Roboto2' -Url = 'https://google.com'
-            $fonts = Get-FontFamily -All
-            $fonts['Roboto2'] = 'https://google1.com'
-            $fonts['Cambera2'] = 'https://google.com'
-
-            Get-FontFamily -All | should -BeLike @{
-                'Roboto2' = 'https://google.com'
-            } 
+        Context "Get-FontFamily -All returns a cloned hashtable" {
+            BeforeAll {
+                Add-FontFamily -Family 'Roboto2' -Url = 'https://google.com'
+                
+                $fonts = Get-FontFamily -All
+                $fonts['Roboto2'] = 'https://google1.com'
+                $fonts['Cambera2'] = 'https://google.com'
+            }
+            It "Get-FontFamily -All returns a cloned hashtable" {
+                Get-FontFamily -All | should -BeLike @{
+                    'Roboto2' = 'https://google.com'
+                } 
+            }
+            AfterAll {
+                Remove-FontFamily -All
+            }
+        }
+        Context "FontsConfig" {
+            BeforeAll {
+                InModuleScope -ModuleName FontUtilities {
+                    $Script:FontsConfig = "$TestDrive\fonts.json" 
+                }
+                $url = 'https://google.com'
+                Add-FontFamily -Family $FontName -Url = $url
+            }
+            It "<FontConfig> exists" {
+                Test-Path -Path $FontsConfig | 
+                    should -BeTrue -Because "$FontConfig should be created"
+            }
+            It "<FontName> is present in the <FontsConfig>" {
+                $json = Get-Content -Path $FontsConfig | ConvertFrom-Json 
+                $json.Count | Should -Be 1
+                $json.$FontName | Should -Be $url
+            }
+            AfterAll {
+                Remove-FontFamily -All
+                Remove-FontFamily -Path $FontsConfig -Recurse -Force -ErrorAction Ignore
+            }
+        }
+        Context "Get Font from fontsConfig" {
+            BeforeAll {
+                $FontUrl = 'https://google.com'
+                InModuleScope -ModuleName FontUtilities {
+                    param($FontName, $FontUrl)
+                    $Script:FontsConfig = "$TestDrive\fonts.json"
+                    @{$FontName = $FontUrl} | ConvertTo-Json | Out-File $Script:FontsConfig
+                } -ArgumentList $FontName, $FontUrl
+            }
+            It "Get font from file" {
+                Get-FontFamily -Family $FontName | Should -Be $FontUrl
+            }
+            AfterAll {
+                Remove-FontFamily -All
+                Remove-Item -Path $FontsConfig -Recurse -Force -ErrorAction Ignore
+            }
         }
     }
 }

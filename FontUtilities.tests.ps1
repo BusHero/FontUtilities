@@ -20,7 +20,7 @@ Describe "Install font file" {
         BeforeAll {
             New-Item -Path $FontFilePath -ItemType File
 
-            Install-FontFile -Path $FontFilePath `
+            Install-Font -Path $FontFilePath `
                              -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
@@ -42,7 +42,7 @@ Describe "Install font file" {
 
     Context "Throw if font file does not exist" {
         BeforeAll {
-            Install-FontFile -Path $FontFilePath `
+            Install-Font -Path $FontFilePath `
                              -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry `
                              -ErrorVariable err
@@ -64,7 +64,7 @@ Describe "Install font file" {
         BeforeAll{
             New-Item -Path $FontsDestinationDirectory -ItemType Directory
             New-Item -Path $FontsDestinationRegistry, $File -ItemType File
-            Install-FontFile -Path $File `
+            Install-Font -Path $File `
                              -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry `
                              -ErrorVariable err
@@ -91,7 +91,7 @@ Describe "Install font file" {
         BeforeAll {
             New-Item -Path $FontFilePath -ItemType File
 
-            Install-FontFile -Path $FontFilePath `
+            Install-Font -Path $FontFilePath `
                              -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
@@ -112,7 +112,7 @@ Describe "Install font file" {
         BeforeAll {
             New-Item -Path $FontFilePath -ItemType File
             
-            Install-FontFile -Path $FontFilePath `
+            Install-Font -Path $FontFilePath `
                              -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
@@ -141,7 +141,7 @@ Describe "Install font file" {
             
             #endregion Garbage
 
-            Install-FontFile -Path $FontPaths `
+            Install-Font -Path $FontPaths `
                              -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
@@ -178,7 +178,7 @@ Describe "Install font file" {
                            $nonFilePath -ItemType File
             #endregion Garbage
 
-            Install-FontFile -Path $fontFilePath, $nonFilePath `
+            Install-Font -Path $fontFilePath, $nonFilePath `
                              -Destination $FontsDestinationDirectory `
                              -Registry $FontsDestinationRegistry
         }
@@ -214,7 +214,7 @@ Describe "Install font file" {
             BeforeAll {
                 New-Item -Path $FontsSourceDirectory\$fontFileName -Force -ItemType File
     
-                Install-FontFile -Path $FontsSourceDirectory `
+                Install-Font -Path $FontsSourceDirectory `
                                  -Destination $FontsDestinationDirectory `
                                  -Registry $FontsDestinationRegistry `
                                  -ErrorVariable err
@@ -249,7 +249,7 @@ Describe "Install font file" {
                 New-Item -Path $FontsSourceDirectory\$fontFileName,
                                $FontsSourceDirectory\$font2FileName -Force -ItemType File
     
-                Install-FontFile -Path $FontsSourceDirectory `
+                Install-Font -Path $FontsSourceDirectory `
                                  -Destination $FontsDestinationDirectory `
                                  -Registry $FontsDestinationRegistry `
                                  -ErrorVariable err
@@ -290,7 +290,7 @@ Describe "Install font file" {
                 New-Item -Path $FontsSourceDirectory\$fontFileName,
                                $FontsSourceDirectory\$nonFontFile -Force -ItemType File
     
-                Install-FontFile -Path $FontsSourceDirectory `
+                Install-Font -Path $FontsSourceDirectory `
                                  -Destination $FontsDestinationDirectory `
                                  -Registry $FontsDestinationRegistry `
                                  -ErrorVariable err
@@ -347,7 +347,7 @@ Describe "Install font file" {
                 New-Item -Path $FontFilePath, 
                                $NonFontFilePath -Force -ItemType File
                 Compress-Archive -Path $FontFilePath, $NonFontFilePath -DestinationPath $FontZipPath
-                Install-FontFile -Registry $FontsDestinationRegistry `
+                Install-Font -Registry $FontsDestinationRegistry `
                                  -Destination $FontsDestinationDirectory `
                                  -Url $url `
                                  -ErrorVariable err
@@ -376,7 +376,7 @@ Describe "Install font file" {
                 $NonExistingFile = "NonExistingFont_$([guid]::NewGuid()).ttf"
                 $url = "$Server/$NonExistingFile"
                 
-                Install-FontFile -Registry $FontsDestinationRegistry `
+                Install-Font -Registry $FontsDestinationRegistry `
                                  -Destination $FontsDestinationDirectory `
                                  -Url $url `
                                  -ErrorVariable err
@@ -393,7 +393,7 @@ Describe "Install font file" {
             BeforeAll {
                 $url = "$Server/$NonFontFileName"
                 New-Item -Path $TestDrive\$NonFontFileName -ItemType File -Force
-                Install-FontFile -Registry $FontsDestinationRegistry `
+                Install-Font -Registry $FontsDestinationRegistry `
                                  -Destination $FontsDestinationDirectory `
                                  -Url $url `
                                  -ErrorVariable err `
@@ -423,7 +423,7 @@ Describe "Install font file" {
                 
                 Add-FontFamily -Family $FontName -Uri "$server/$FontZipName"
 
-                Install-FontFile -Registry $FontsDestinationRegistry `
+                Install-Font -Registry $FontsDestinationRegistry `
                                  -Destination $FontsDestinationDirectory `
                                  -Family $FontName
             }
@@ -449,7 +449,7 @@ Describe "Install font file" {
         Context "Trying to install a family that does not exist" {
             BeforeAll {
                 $FontName = 'no-fontfamily'
-                Install-FontFile -Registry $FontsDestinationRegistry `
+                Install-Font -Registry $FontsDestinationRegistry `
                                  -Destination $FontsDestinationDirectory `
                                  -Family $FontName `
                                  -ErrorVariable err
@@ -474,7 +474,7 @@ Describe "Install font file" {
         Context "Trying to install a family from an invalid link" {
             BeforeAll {
                 Add-FontFamily -Family $FontName -Uri "$server/no-font.zip"
-                Install-FontFile -Registry $FontsDestinationRegistry `
+                Install-Font -Registry $FontsDestinationRegistry `
                                  -Destination $FontsDestinationDirectory `
                                  -Family $FontName `
                                  -ErrorVariable err

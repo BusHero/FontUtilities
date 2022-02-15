@@ -61,7 +61,7 @@ function Remove-FontFamily {
 	saveFontsHashtable $fonts
 }
 
-#region Install-FontFile (Implementation Details)
+#region Install-Font (Implementation Details)
 function Format-Name {
 	param (
 		[Parameter(Mandatory = $true)][System.IO.FileSystemInfo]$font
@@ -134,14 +134,14 @@ function DownloadFontsArchive([Parameter(ValueFromPipeline)][string]$uri) {
 
 #endregion
 
-function Install-FontFile {
+function Install-Font {
 	[CmdletBinding()]
 	param(
 		[ValidateNotNullOrEmpty()][string[]]$Path,
 		[ValidateNotNullOrEmpty()][string]$url,
 		[ValidateNotNullOrEmpty()][string]$Family,
-		[Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Destination,
-		[Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Registry)
+		[Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Destination = "C:\Windows\fonts",
+		[Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Registry = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts")
 	try {
 		if ($url)
 		{
@@ -179,7 +179,7 @@ function Install-FontFile {
 	} catch {}
 }
 
-Export-ModuleMember -Function Install-FontFile,
+Export-ModuleMember -Function Install-Font,
 							  Add-FontFamily,
 							  Get-FontFamily,
 							  Remove-FontFamily `

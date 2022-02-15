@@ -598,6 +598,30 @@ Describe "Install font file" {
                                   $file -Recurse -Force -ErrorAction Ignore
             }
         }
+        Context "Add fonts from url" {
+            BeforeAll {
+                $JsonFileName = 'donner.json'
+                $JsonFilePath = "$TestDrive\$JsonFileName"
+                @{ $FontName = $FontUrl } | ConvertTo-Json | Out-File -FilePath $JsonFilePath
+                $url = "http://localhost:8000/$JsonFileName"
+
+                $job = Start-Job -Verbose -ScriptBlock { 
+                    param($path)
+                    python -m http.server 8000 -d $path 
+                } -ArgumentList $TestDrive 
+
+                Add-FontFamily -Online $url
+            }
+            It "<FontName> should exists" {
+                Get-FontFamily -Family $FontName | should -Be $FontUrl
+            }
+            AfterAll {
+                Remove-Job -Id $job.Id -Force -ErrorAction Ignore
+                Remove-FontFamily -All
+                Remove-Item -Path $FontsConfig,
+                                  $JsonFilePath -Recurse -Force -ErrorAction Ignore
+            }
+        }
     }
 }
 

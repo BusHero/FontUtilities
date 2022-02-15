@@ -16,9 +16,16 @@ function saveFontsHashtable($fonts) {
 function Add-FontFamily{
 	param([ValidateNotNullOrEmpty()][string]$Family,
 		  [Alias('Url')][ValidateNotNullOrEmpty()][string]$Uri,
-		  [ValidateNotNullOrEmpty()][string]$Path)
+		  [ValidateNotNullOrEmpty()][string]$Path,
+		  [ValidateNotNullOrEmpty()][string]$Online)
 	if ($Path) {
 		Copy-Item -Path $Path -Destination $script:FontsConfig -Force
+	}
+	elseif ($Online) {
+		Invoke-WebRequest -Uri $Online `
+						  -Method Get `
+						  -ContentType 'application/json' `
+						  -OutFile $script:FontsConfig
 	}
 	else {
 		$fonts = getFontsHashtable

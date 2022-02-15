@@ -518,6 +518,16 @@ Describe "Install font file" {
             Remove-FontFamily -All
             Get-FontFamily -All | should -BeNullOrEmpty
         }
+        It "asdasd" {
+            Add-FontFamily -Family 'Roboto2' -Url = 'https://google.com'
+            $fonts = Get-FontFamily -All
+            $fonts['Roboto2'] = 'https://google1.com'
+            $fonts['Cambera2'] = 'https://google.com'
+
+            Get-FontFamily -All | should -BeLike @{
+                'Roboto2' = 'https://google.com'
+            } 
+        }
     }
 }
 

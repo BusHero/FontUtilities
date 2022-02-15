@@ -473,7 +473,7 @@ Describe "Install font file" {
         }
         Context "Trying to install a family from an invalid link" {
             BeforeAll {
-                Add-FontFamily -Family $FontName "$server/no-font.zip"
+                Add-FontFamily -Family $FontName -Uri "$server/no-font.zip"
                 Install-FontFile -Registry $FontsDestinationRegistry `
                                  -Destination $FontsDestinationDirectory `
                                  -Family $FontName `
@@ -519,8 +519,8 @@ Describe "Install font file" {
         }
         Context "Get-AllFonts" {
             It "Get-AllFonts" {
-                Add-FontFamily -Family 'Roboto1' -Url = 'https://google1.com'
-                Add-FontFamily -Family 'Cambera1' -Url = 'https://google2.com'
+                Add-FontFamily -Family 'Roboto1' -Url 'https://google1.com'
+                Add-FontFamily -Family 'Cambera1' -Url 'https://google2.com'
                 Get-FontFamily -All | should -BeLike @{
                     'Roboto1' = 'https://google1.com';
                     'Cambera1' = 'https://google2.com'
@@ -535,7 +535,7 @@ Describe "Install font file" {
         }
         Context "Get-FontFamily -All returns a cloned hashtable" {
             BeforeAll {
-                Add-FontFamily -Family 'Roboto2' -Url = 'https://google.com'
+                Add-FontFamily -Family 'Roboto2' -Url 'https://google.com'
                 
                 $fonts = Get-FontFamily -All
                 $fonts['Roboto2'] = 'https://google1.com'
@@ -573,7 +573,7 @@ Describe "Install font file" {
         Context "Get Font from fontsConfig" {
             BeforeAll {
                 $FontUrl = 'https://google.com'
-                @{$FontName = $FontUrl} | ConvertTo-Json | Out-File $FontsConfig
+                @{$FontName = $FontUrl} | ConvertTo-Json | Out-File -FilePath $FontsConfig
             }
             It "Get font from file" {
                 Get-FontFamily -Family $FontName | Should -Be $FontUrl
@@ -584,7 +584,19 @@ Describe "Install font file" {
             }
         }
         Context "Add Fonts from json path" {
-
+            BeforeAll {
+                $file = 'TestDrive:\donner.json'
+                @{ $FontName = $FontUrl } | ConvertTo-Json | Out-File -FilePath $file
+                Add-FontFamily -Path $file
+            }
+            It "<FontName> should exists" {
+                Get-FontFamily -Family $FontName | should -Be $FontUrl
+            }
+            AfterAll {
+                Remove-FontFamily -All
+                Remove-Item -Path $FontsConfig,
+                                  $file -Recurse -Force -ErrorAction Ignore
+            }
         }
     }
 }

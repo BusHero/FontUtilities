@@ -15,10 +15,16 @@ function saveFontsHashtable($fonts) {
 
 function Add-FontFamily{
 	param([ValidateNotNullOrEmpty()][string]$Family,
-		  [Alias('Url')][ValidateNotNullOrEmpty()][string]$Uri)
-	$fonts = getFontsHashtable
-	$fonts[$Family] = $Uri
-	saveFontsHashtable $fonts
+		  [Alias('Url')][ValidateNotNullOrEmpty()][string]$Uri,
+		  [ValidateNotNullOrEmpty()][string]$Path)
+	if ($Path) {
+		Copy-Item -Path $Path -Destination $script:FontsConfig -Force
+	}
+	else {
+		$fonts = getFontsHashtable
+		$fonts[$Family] = $Uri
+		saveFontsHashtable $fonts
+	}
 }
 
 function Get-FontFamily {

@@ -11,6 +11,10 @@ Describe "Install font file" {
         $FontRegistryEntry = "$FontName (TrueType)"
         $FontsDestinationDirectory = 'TestDrive:\fonts'
         $FontsDestinationRegistry = 'TestRegistry:\fonts'
+        
+        InModuleScope -ModuleName FontUtilities {
+            $Script:FontsConfig = "$TestDrive\fonts.json"
+        }
     }
     Context "Font is installed" {
         BeforeAll {
@@ -329,7 +333,7 @@ Describe "Install font file" {
             $job = Start-Job -Verbose -ScriptBlock { 
                 param($path)
                 python -m http.server 8000 -d $path 
-            } -ArgumentList $TestDrive
+            } -ArgumentList $TestDrive 
             $server = "http://localhost:8000"
         }
         Context "A valid link" {
@@ -498,26 +502,36 @@ Describe "Install font file" {
     }
 
     Context "Add font family" {
-        It "Add-FontFamily" {
-            $FontFamily = 'Roboto'
-            $url = 'https://google.com'
-            
-            Add-FontFamily -Family $FontFamily -Url = $url
-            Get-FontFamily -Family $FontFamily | should -be $url
-            
-            Remove-FontFamily -Family $FontFamily
-            Get-FontFamily -Family $FontFamily | should -BeNullOrEmpty
+        BeforeAll {
+            $FontUrl = 'https://google.com'
         }
-        It "Get-AllFonts" {
-            Add-FontFamily -Family 'Roboto1' -Url = 'https://google1.com'
-            Add-FontFamily -Family 'Cambera1' -Url = 'https://google2.com'
-            Get-FontFamily -All | should -BeLike @{
-                'Roboto1' = 'https://google1.com';
-                'Cambera1' = 'https://google2.com'
+        Context "Add-FontFamily" {
+            It "Add-FontFamily" {
+                Add-FontFamily -Family $FontName -Uri $FontUrl
+                Get-FontFamily -Family $FontName | should -be $FontUrl
+                Remove-FontFamily -Family $FontName
+                Get-FontFamily -Family $FontName | should -BeNullOrEmpty
             }
-            
-            Remove-FontFamily -All
-            Get-FontFamily -All | should -BeNullOrEmpty
+            AfterAll {
+                Remove-FontFamily -All
+                Remove-Item -Path $FontsConfig -Recurse -Force -ErrorAction Ignore
+            }
+        }
+        Context "Get-AllFonts" {
+            It "Get-AllFonts" {
+                Add-FontFamily -Family 'Roboto1' -Url = 'https://google1.com'
+                Add-FontFamily -Family 'Cambera1' -Url = 'https://google2.com'
+                Get-FontFamily -All | should -BeLike @{
+                    'Roboto1' = 'https://google1.com';
+                    'Cambera1' = 'https://google2.com'
+                }
+                
+                Remove-FontFamily -All
+                Get-FontFamily -All | should -BeNullOrEmpty
+            }
+            AfterAll {
+                Remove-Item -Path $FontsConfig -Recurse -Force -ErrorAction Ignore
+            }
         }
         Context "Get-FontFamily -All returns a cloned hashtable" {
             BeforeAll {
@@ -534,15 +548,13 @@ Describe "Install font file" {
             }
             AfterAll {
                 Remove-FontFamily -All
+                Remove-Item $FontsConfig -Recurse -Force -ErrorAction Ignore
             }
         }
         Context "FontsConfig" {
             BeforeAll {
-                InModuleScope -ModuleName FontUtilities {
-                    $Script:FontsConfig = "$TestDrive\fonts.json" 
-                }
-                $url = 'https://google.com'
-                Add-FontFamily -Family $FontName -Url = $url
+                $FontUrl = 'https://google.com'
+                Add-FontFamily -Family $FontName -Url $FontUrl
             }
             It "<FontConfig> exists" {
                 Test-Path -Path $FontsConfig | 
@@ -551,7 +563,7 @@ Describe "Install font file" {
             It "<FontName> is present in the <FontsConfig>" {
                 $json = Get-Content -Path $FontsConfig | ConvertFrom-Json 
                 $json.Count | Should -Be 1
-                $json.$FontName | Should -Be $url
+                $json.$FontName | Should -Be $FontUrl
             }
             AfterAll {
                 Remove-FontFamily -All
@@ -561,11 +573,7 @@ Describe "Install font file" {
         Context "Get Font from fontsConfig" {
             BeforeAll {
                 $FontUrl = 'https://google.com'
-                InModuleScope -ModuleName FontUtilities {
-                    param($FontName, $FontUrl)
-                    $Script:FontsConfig = "$TestDrive\fonts.json"
-                    @{$FontName = $FontUrl} | ConvertTo-Json | Out-File $Script:FontsConfig
-                } -ArgumentList $FontName, $FontUrl
+                @{$FontName = $FontUrl} | ConvertTo-Json | Out-File $FontsConfig
             }
             It "Get font from file" {
                 Get-FontFamily -Family $FontName | Should -Be $FontUrl
@@ -574,6 +582,9 @@ Describe "Install font file" {
                 Remove-FontFamily -All
                 Remove-Item -Path $FontsConfig -Recurse -Force -ErrorAction Ignore
             }
+        }
+        Context "Add Fonts from json path" {
+
         }
     }
 }

@@ -2,7 +2,9 @@ $script:FontsConfig = "$PSScriptRoot\fonts.json"
 
 function getFontsHashtable {
 	switch (Test-Path -Path $script:FontsConfig) {
-		$true { Get-Content -Path $script:FontsConfig | ConvertFrom-Json -AsHashtable }
+		$true {
+			Get-Content -Path $script:FontsConfig | ConvertFrom-Json -AsHashtable
+		}
 		Default { @{} }
 	}
 }
@@ -13,19 +15,21 @@ function saveFontsHashtable($fonts) {
 
 function Add-FontFamily{
 	param([ValidateNotNullOrEmpty()][string]$Family,
-		  [ValidateNotNullOrEmpty()][string]$Uri)
+		  [Alias('Url')][ValidateNotNullOrEmpty()][string]$Uri)
 	$fonts = getFontsHashtable
 	$fonts[$Family] = $Uri
-	ConvertTo-Json $fonts | Out-File -FilePath $script:FontsConfig
+	saveFontsHashtable $fonts
 }
 
 function Get-FontFamily {
 	param([ValidateNotNullOrEmpty()][string]$Family,
 		  [switch]$All)
 	$fonts = getFontsHashtable
+	
 	if ($All) {
 		return $fonts.Clone()
 	}
+
 	return $fonts[$Family]
 }
 

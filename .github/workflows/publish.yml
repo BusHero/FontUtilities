@@ -1,12 +1,11 @@
 name: Publish to Powershell gallery
-on:
-  release:
-    types:
-      - published
+on: push
 jobs:
   build:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Upload PowerShell module
-      run: Publish-Module -Path . -Exclude '.\github' -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    
+    - name: Run tests
+      run: Invoke-Pester
+#     - name: Upload PowerShell module
+#       run: Publish-Module -Path . -Exclude '.\github' -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

@@ -6,6 +6,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Run tests
-      run: Invoke-Pester
+      run: Invoke-Pester .\tests\
 #     - name: Upload PowerShell module
 #       run: Publish-Module -Path . -Exclude '.\github' -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

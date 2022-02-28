@@ -1,5 +1,5 @@
 BeforeAll { 
-    Import-Module .\FontUtilities.psm1
+    Import-Module "$PSScriptRoot\..\src\FontUtilities.psm1"
 }
 
 Describe "Install font file" {

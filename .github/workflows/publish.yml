@@ -11,7 +11,7 @@ jobs:
     # - name: Run tests
     #   run: Invoke-Pester .\tests\
     - name: Register Github as PSRepository
-      run: Register-PSRepository -Name github -SourceLocation https://nuget.pkg.github.com/BusHero/index.json -PublishLocation https://nuget.pkg.github.com/BusHero/index.json -InstallationPolicy Trusted
+      run: Register-PSRepository -Name ${{ env.PS_REPOSITORY }} -SourceLocation ${{ env.GITHUB_FEED }} -PublishLocation ${{ env.GITHUB_FEED }} -InstallationPolicy Trusted
     - name: Show repositories
       run: Get-PSRepository
     # - name: Updated module version

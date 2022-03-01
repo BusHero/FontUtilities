@@ -11,6 +11,6 @@ jobs:
       run: |
         $version = Test-ModuleManifest .\src\FontUtilities.psd1 | Select-Object -ExpandProperty Version
         $version = New-Object System.Version($version.Major, $version.Minor, ${{ github.run_number }})
-        Update-ModuleManifest .\src\FontUtilities.psd1 -Version $version
+        Update-ModuleManifest .\src\FontUtilities.psd1 -ModuleVersion $version
 #     - name: Upload PowerShell module
 #       run: Publish-Module -Path . -Exclude '.\github' -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

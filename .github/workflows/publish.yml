@@ -7,10 +7,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: Run tests
       run: Invoke-Pester .\tests\
-    - name: Updated module version
-      run: |
-        $version = Test-ModuleManifest .\src\FontUtilities.psd1 | Select-Object -ExpandProperty Version
-        $version = New-Object System.Version($version.Major, $version.Minor, ${{ github.run_number }})
-        Update-ModuleManifest .\src\FontUtilities.psd1 -ModuleVersion $version
+    - name: Show repositories
+      run: Get-PSRepository
+    # - name: Updated module version
+    #   run: |
+    #     $version = Test-ModuleManifest .\src\FontUtilities.psd1 | Select-Object -ExpandProperty Version
+    #     $version = New-Object System.Version($version.Major, $version.Minor, ${{ github.run_number }})
+    #     Update-ModuleManifest .\src\FontUtilities.psd1 -ModuleVersion $version
 #     - name: Upload PowerShell module
 #       run: Publish-Module -Path . -Exclude '.\github' -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

@@ -12,9 +12,9 @@
 Param
 (
   [Parameter(Mandatory = $true)]
-  # [ValidateScript({
-  #       Test-Path $_ -PathType leaf -Include '*.psd1'
-  # })]
+  [ValidateScript({
+        Test-Path $_ -PathType leaf -Include '*.psd1'
+  })]
   [string]
   $ManifestPath,
 
@@ -486,6 +486,7 @@ function New-NuSpecFile
         $(if($ProjectUri)
 {
         "<projectUrl>$(Get-EscapedString -ElementValue "$ProjectUri")</projectUrl>"
+        "<repository type='git' url='$(Get-EscapedString -ElementValue "$ProjectUri")'/>"
 })
         $(if($IconUri)
 {

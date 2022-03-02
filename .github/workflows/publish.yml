@@ -17,7 +17,7 @@ jobs:
     - name: Pack
       run: nuget pack .\src\FontUtilities\FontUtilities.nuspec
     - name: Load package
-      run: dotnet nuget push *.nupkg --source "github" --api-key ${{ secrets.POM }}
+      run: dotnet nuget push *.nupkg --source "github" --api-key ${{ secrets.POM }} 
     # - name: Updated module version
     #   run: |
     #     $version = Test-ModuleManifest .\src\FontUtilities.psd1 | Select-Object -ExpandProperty Version

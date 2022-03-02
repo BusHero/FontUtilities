@@ -8,12 +8,12 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Run tests
-      run: Invoke-Pester .\tests\
+    # - name: Run tests
+    #   run: Invoke-Pester .\tests\
     - name: Register Github as PSRepository
       run: dotnet nuget add source --username BusHero --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/BusHero/index.json" 
-    # - name: Show repositories
-    #   run: Get-PSRepository
+    - name: Pack
+      run: nuget pack .\src\FontUtilities\FontUtilities.nuspec
     # - name: Updated module version
     #   run: |
     #     $version = Test-ModuleManifest .\src\FontUtilities.psd1 | Select-Object -ExpandProperty Version

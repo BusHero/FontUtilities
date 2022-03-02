@@ -12,9 +12,9 @@
 Param
 (
   [Parameter(Mandatory = $true)]
-  [ValidateScript({
-        Test-Path $_ -PathType leaf -Include '*.psd1'
-  })]
+  # [ValidateScript({
+  #       Test-Path $_ -PathType leaf -Include '*.psd1'
+  # })]
   [string]
   $ManifestPath,
 

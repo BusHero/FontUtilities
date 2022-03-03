@@ -3,7 +3,9 @@ on: push
 env:
   PS_REPOSITORY: github
   GITHUB_FEED: https://nuget.pkg.github.com/BusHero/index.json
-  MODULE_MANIFEST: .\src\FontUtilities\FontUtilities.psd1
+  MODULE_MANIFEST_PATH: .\src\FontUtilities\FontUtilities.psd1
+  NUSPEC_PATH: .\src\FontUtilities\FontUtilities.nuspec
+  USERNAME: BusHero
 jobs:
   build:
     runs-on: windows-latest
@@ -12,14 +14,14 @@ jobs:
     - name: Run tests
       run: Invoke-Pester .\tests\
     - name: Updated module version
-      run: .\update-version.ps1 -Path ${{ env.MODULE_MANIFEST }} -build ${{ github.run_number }}
+      run: .\update-version.ps1 -Path ${{ env.MODULE_MANIFEST_PATH }} -build ${{ github.run_number }}
     - name: Register Github as PSRepository
-      run: dotnet nuget add source --username BusHero --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/BusHero/index.json" 
+      run: dotnet nuget add source --username ${{ env.USERNAME }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name ${{ env.PS_REPOSITORY }} ${{ env.GITHUB_FEED }}
     - name: Create nuspec
-      run: .\nuspec.ps1 -ManifestPath .\src\FontUtilities\FontUtilities.psd1
+      run: .\nuspec.ps1 -ManifestPath ${{ env.MODULE_MANIFEST_PATH }}
     - name: Pack
-      run: nuget pack .\src\FontUtilities\FontUtilities.nuspec
-    - name: Load package
-      run: dotnet nuget push *.nupkg --source "github" --api-key ${{ secrets.POM }} 
-    - name: Upload PowerShell module
-      run: Publish-Module -Path . -Exclude '.\github' -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    
+      run: nuget pack ${{ env.NUSPEC_PATH }}
+    - name: Push package to github 
+      run: dotnet nuget push *.nupkg --source ${{ env.PS_REPOSITORY }} --api-key ${{ secrets.POM }} 
+    # - name: Upload PowerShell module
+    #   run: Publish-Module -Path . -Exclude '.\github' -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

@@ -328,7 +328,7 @@ Describe "Install font file" {
         }
     }
 
-    Context "Download fonts" -Tag 'Download' {
+    Context "Download fonts" -Tag 'LocalServer' {
         BeforeAll {
             $job = Start-Job -Verbose -ScriptBlock { 
                 param($path)
@@ -598,7 +598,7 @@ Describe "Install font file" {
                                   $file -Recurse -Force -ErrorAction Ignore
             }
         }
-        Context "Add fonts from url" {
+        Context "Add fonts from url" -Tag 'LocalServer' {
             BeforeAll {
                 $JsonFileName = 'donner.json'
                 $JsonFilePath = "$TestDrive\$JsonFileName"

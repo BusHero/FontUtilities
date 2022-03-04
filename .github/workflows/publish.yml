@@ -3,6 +3,7 @@ on: push
 env:
   PS_REPOSITORY: github
   GITHUB_FEED: https://nuget.pkg.github.com/BusHero/index.json
+  MODULE_PATH: .\src\FontUtilities\
   MODULE_MANIFEST_PATH: .\src\FontUtilities\FontUtilities.psd1
   NUSPEC_PATH: .\src\FontUtilities\FontUtilities.nuspec
   USERNAME: BusHero
@@ -25,5 +26,5 @@ jobs:
       run: nuget pack ${{ env.NUSPEC_PATH }}
     - name: Push package to github 
       run: dotnet nuget push *.nupkg --source ${{ env.PS_REPOSITORY }} --api-key ${{ secrets.POM }}
-    # - name: Upload PowerShell module
-    #   run: Publish-Module -Path . -Exclude '.\github' -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    
+    - name: Upload package to PSGallery
+      run: Publish-Module -Path ${{ env.MODULE_PATH }} -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

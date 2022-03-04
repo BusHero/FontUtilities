@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Run tests
-      run: Invoke-Pester .\tests\
+      run: Invoke-Pester .\tests\ -ExcludeTagFilter Download
     - name: Updated module version
       run: .\update-version.ps1 -Path ${{ env.MODULE_MANIFEST_PATH }} -build ${{ github.run_number }}
     - name: Register Github as PSRepository

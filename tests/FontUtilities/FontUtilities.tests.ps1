@@ -328,7 +328,7 @@ Describe "Install font file" {
         }
     }
 
-    Context "Download fonts" {
+    Context "Download fonts" -Tag 'Download' {
         BeforeAll {
             $job = Start-Job -Verbose -ScriptBlock { 
                 param($path)

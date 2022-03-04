@@ -26,5 +26,7 @@ jobs:
       run: nuget pack ${{ env.NUSPEC_PATH }}
     - name: Push package to github 
       run: dotnet nuget push *.nupkg --source ${{ env.PS_REPOSITORY }} --api-key ${{ secrets.POM }}
+    - name: Remove nuspec file
+      run: Remove-Item -Path ${{ env.NUSPEC_PATH }} -Force -Recurse -ErrorAction Ignore
     - name: Upload PowerShell module
-      run: Publish-Module -Path ${{ env.MODULE_PATH }} -Exclude ${{ env.NUSPEC_PATH }} -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    
+      run: Publish-Module -Path ${{ env.MODULE_PATH }} -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

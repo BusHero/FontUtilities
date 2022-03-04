@@ -27,4 +27,4 @@ jobs:
     - name: Push package to github 
       run: dotnet nuget push *.nupkg --source ${{ env.PS_REPOSITORY }} --api-key ${{ secrets.POM }}
     - name: Upload PowerShell module
-      run: Publish-Module -Path ${{ env.MODULE_PATH }} -ExcludePath ${{ env.NUSPEC_PATH }} -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    
+      run: Publish-Module -Path ${{ env.MODULE_PATH }} -Exclude ${{ env.NUSPEC_PATH }} -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

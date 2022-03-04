@@ -121,15 +121,22 @@ function DownloadFontsArchive([Parameter(ValueFromPipeline)][string]$uri) {
 	if (-not $uri) {
 		return
 	}
-	$fontDirectoryName = "font_$([guid]::NewGuid())"
-	$fontDirectoryPath = "$PSScriptRoot\.fonts\$fontDirectoryName"
-	$zipFilePath = "$PSScriptRoot\.fonts\$fontDirectoryName.zip"
+	try {
+		$fontDirectoryName = "font_$([guid]::NewGuid())"
+		$fontDirectoryPath = "$env:TEMP\$fontDirectoryName"
+		$zipFilePath = "$env:TEMP\$fontDirectoryName.zip"
 	
-	New-Item -Path "$PSScriptRoot\.fonts" -ItemType Directory -Force
-	Invoke-WebRequest -Uri $uri -Method Get -ContentType 'application/zip' -OutFile $zipFilePath
-	Expand-Archive -Path $zipFilePath -DestinationPath $fontDirectoryPath
+		New-Item -Path "$PSScriptRoot\.fonts" -ItemType Directory -Force
+		Invoke-WebRequest -Uri $uri -Method Get -ContentType 'application/zip' -OutFile $zipFilePath
+		Expand-Archive -Path $zipFilePath -DestinationPath $fontDirectoryPath
 	
-	$fontDirectoryPath
+		$fontDirectoryPath
+	}
+	finally {
+		if ($zipFilePath) {
+			Remove-Item -Path $zipFilePath -Force -Recurse -ErrorAction Ignore
+		}
+	}
 }
 
 #endregion
@@ -145,7 +152,8 @@ function Install-Font {
 	try {
 		if ($url)
 		{
-			$Path += DownloadFontsArchive $url
+			$FontsDirectoryPath = DownloadFontsArchive -uri $url
+			$Path += $FontsDirectoryPath
 		}
 		if ($Family)
 		{
@@ -177,6 +185,11 @@ function Install-Font {
 			} catch { }
 		}
 	} catch {}
+	finally {
+		if ($FontsDirectoryPath) {
+			Remove-Item -Path $FontsDirectoryPath -Force -Recurse -ErrorAction Ignore
+		}
+	}
 }
 
 Export-ModuleMember -Function Install-Font,

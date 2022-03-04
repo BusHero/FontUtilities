@@ -332,9 +332,9 @@ Describe "Install font file" {
         BeforeAll {
             $job = Start-Job -Verbose -ScriptBlock { 
                 param($path)
-                python -m http.server 8000 -d $path 
+                python -m http.server 8080 -d $path 
             } -ArgumentList $TestDrive 
-            $server = "http://localhost:8000"
+            $server = "http://localhost:8080"
         }
         Context "A valid link" {
             BeforeAll {

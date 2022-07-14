@@ -19,14 +19,18 @@ jobs:
     - name: Updated module version
       run: .\update-version.ps1 -Path ${{ env.MODULE_MANIFEST_PATH }} -build ${{ github.run_number }}
     - name: Register Github as PSRepository
-      run: dotnet nuget add source --username ${{ env.USERNAME }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name ${{ env.PS_REPOSITORY }} ${{ env.GITHUB_FEED }}
-    - name: Create nuspec
-      run: .\nuspec.ps1 -ManifestPath ${{ env.MODULE_MANIFEST_PATH }}
-    - name: Pack
-      run: nuget pack ${{ env.NUSPEC_PATH }}
-    - name: Push package to github 
-      run: dotnet nuget push *.nupkg --source ${{ env.PS_REPOSITORY }} --api-key ${{ secrets.POM }}
-    - name: Remove nuspec file
-      run: Remove-Item -Path ${{ env.NUSPEC_PATH }} -Force -Recurse -ErrorAction Ignore
-    - name: Upload PowerShell module
-      run: Publish-Module -Path ${{ env.MODULE_PATH }} -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    
+      run: Register-PSRepository -Name ${{ env.PS_REPOSITORY }} -SourceLocation ${{ env.GITHUB_FEED }} -ScriptSourceLocation ${{ env.GITHUB_FEED }} -InstallationPolicy Trusted
+    - name: Publish to the Github repository
+      run: Publish-Module -Path ${{ env.MODULE_PATH }} -Repository Github -NuGetApiKey ${{ secrets.POM }}
+    # - name: Register Github as PSRepository
+    #   run: dotnet nuget add source --username ${{ env.USERNAME }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name ${{ env.PS_REPOSITORY }} ${{ env.GITHUB_FEED }}
+    # - name: Create nuspec
+    #   run: .\nuspec.ps1 -ManifestPath ${{ env.MODULE_MANIFEST_PATH }}
+    # - name: Pack
+    #   run: nuget pack ${{ env.NUSPEC_PATH }}
+    # - name: Push package to github 
+    #   run: dotnet nuget push *.nupkg --source ${{ env.PS_REPOSITORY }} --api-key ${{ secrets.POM }}
+    # - name: Remove nuspec file
+    #   run: Remove-Item -Path ${{ env.NUSPEC_PATH }} -Force -Recurse -ErrorAction Ignore
+    # - name: Upload PowerShell module
+    #   run: Publish-Module -Path ${{ env.MODULE_PATH }} -NuGetApiKey ${{ secrets.POWERSHELL_GALLERY_DEPLOY }}    

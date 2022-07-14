@@ -21,7 +21,7 @@ jobs:
     - name: Register Github as PSRepository
       run: dotnet nuget add source --username ${{ env.USERNAME }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name ${{ env.PS_REPOSITORY }} ${{ env.GITHUB_FEED }}
     - name: Register Github as PSRepository
-      run: Register-PSRepository -Name ${{ env.PS_REPOSITORY }} -PublishLocation ${{ env.GITHUB_FEED }} -ScriptPublishLocation ${{ env.GITHUB_FEED }} -InstallationPolicy Trusted
+      run: Register-PSRepository -Name ${{ env.PS_REPOSITORY }} -SourceLocation ${{ env.GITHUB_FEED }} -ScriptSourceLocation ${{ env.GITHUB_FEED }}  -PublishLocation ${{ env.GITHUB_FEED }} -ScriptPublishLocation ${{ env.GITHUB_FEED }} -InstallationPolicy Trusted
     - name: Publish to the Github repository
       run: Publish-Module -Path ${{ env.MODULE_PATH }} -Repository Github -NuGetApiKey ${{ secrets.POM }}
     # - name: Create nuspec
